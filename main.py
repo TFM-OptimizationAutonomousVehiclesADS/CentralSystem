@@ -71,7 +71,7 @@ async def all_images():
 
 @app.get("/digital-models/all")
 async def all_digital_models():
-    containers = dockerClient.containers.list(all=True, filters={"ancestor": image_digital_model_name})
+    containers = dockerClient.containers.list(all=True, filters={"ancestor": f"{image_digital_model_name}:{image_digital_model_tag}"})
     digital_models = []
     for container in containers:
         data = {}
@@ -87,7 +87,7 @@ async def all_digital_models():
 
 @app.get("/all_real_systems")
 async def all_real_systems():
-    containers = dockerClient.containers.list(all=True, filters={"ancestor": image_real_sytem_name})
+    containers = dockerClient.containers.list(all=True, filters={"ancestor": f"{image_real_sytem_name}:{image_real_system_tag}"})
     real_systems = []
     for container in containers:
         data = {}
@@ -106,7 +106,7 @@ async def digital_models_new():
     container_name = "mdv2-" + str(uuid.uuid1())
     dockerClient.images.pull(repository=image_digital_model_name, tag=image_digital_model_tag)
     options = {
-        "image": image_digital_model_name,
+        "image": f"{image_digital_model_name}:{image_digital_model_tag}",
         "name": container_name,
         "detach": True,  # Ejecutar el contenedor en segundo plano
         "ports": {"8001/tcp": None}
