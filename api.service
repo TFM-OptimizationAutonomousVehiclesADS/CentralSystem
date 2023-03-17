@@ -4,7 +4,7 @@ After=multi-user.target
 [Service]
 Type=simple
 Restart=always
-Environment="PYTHONPATH=~/CentralSystem/"
-ExecStart=~/CentralSystem/venv/bin/python3 ~/CentralSystem/main.py
+Environment="PYTHONPATH=/home/jesuscumpli/CentralSystem/"
+ExecStart=/home/jesuscumpli/CentralSystem/venv/bin/python3 /home/jesuscumpli/CentralSystem/main.py
 [Install]
 WantedBy=multi-user.target
