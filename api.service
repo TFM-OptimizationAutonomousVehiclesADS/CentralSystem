@@ -1,0 +1,10 @@
+[Unit]
+Description=API Central System Service
+After=multi-user.target
+[Service]
+Type=simple
+Restart=always
+Environment="PYTHONPATH=/CentralSystem"
+ExecStart=/CentralSystem/venv/bin/python3 /CentralSystem/main.py
+[Install]
+WantedBy=multi-user.target
