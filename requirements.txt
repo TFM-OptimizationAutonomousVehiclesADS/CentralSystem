@@ -1,0 +1,5 @@
+pymongo
+fastapi
+docker
+uvicorn
+starlette
