@@ -13,7 +13,7 @@ app = FastAPI(middleware=[
 ])
 dockerClient = docker.from_env()
 
-image_digital_model_name = "jesuscumpli/digital-model"
+image_digital_model_name = "jesuscumpli/model-digital"
 image_digital_model_tag = "mdv2"
 image_real_sytem_name = "jesuscumpli/real-system"
 image_real_system_tag = "rsv2"
