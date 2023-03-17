@@ -7,4 +7,8 @@
 > source venv/bin/activate
 > pip install -r requirements.txt
 > sudo usermod -aG docker <username>
-> uvicorn main:app --host 0.0.0.0 --port 8080 &
+
+> sudo cp api.service /etc/systemd/system/api.service
+> sudo systemctl enable api.service
+> sudo systemctl start api.service
+
