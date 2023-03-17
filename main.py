@@ -104,7 +104,7 @@ async def all_real_systems():
 @app.get("/digital-models/new")
 async def digital_models_new():
     container_name = "mdv2-" + str(uuid.uuid1())
-    dockerClient.images.pull(repository=image_digital_model_name)
+    dockerClient.images.pull(repository=image_digital_model_name, tag=image_digital_model_tag)
     options = {
         "image": image_digital_model_name,
         "name": container_name,
