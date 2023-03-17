@@ -1,0 +1,10 @@
+## HOW TO INSTALL
+> git clone https://github.com/TFM-OptimizationAutonomousVehiclesADS/CentralSystem.git
+> cd CentralSystem/
+> sudo apt-get install python3.10-venv
+> python3 -m venv venv
+> sudo apt install uvicorn
+> source venv/bin/activate
+> pip install -r requirements.txt
+> sudo usermod -aG docker <username>
+> uvicorn main:app --host 0.0.0.0 --port 8080
