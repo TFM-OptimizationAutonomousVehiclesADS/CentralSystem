@@ -124,6 +124,7 @@ async def digital_models_new(info: Request):
         "detach": True,  # Ejecutar el contenedor en segundo plano
         "ports": {"8001/tcp": None},
         "environment": {
+            "DIGITAL_MODEL_USERNAME_OWNER": info_json["DIGITAL_MODEL_USERNAME_OWNER"],
             "DIGITAL_MODEL_RETRAINING_TEST_SIZE": info_json["DIGITAL_MODEL_RETRAINING_TEST_SIZE"],
             "DIGITAL_MODEL_RETRAINING_TUNNING": info_json["DIGITAL_MODEL_RETRAINING_TUNNING"],
             "DIGITAL_MODEL_RETRAINING_MIN_SPLIT": info_json["DIGITAL_MODEL_RETRAINING_MIN_SPLIT"],
