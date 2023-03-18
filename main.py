@@ -101,7 +101,7 @@ async def all_real_systems():
         real_systems.append(data)
     return {"real_systems": real_systems}
 
-@app.get("/digital-models/new")
+@app.post("/digital-models/new")
 async def digital_models_new():
     container_name = "mdv2-" + str(uuid.uuid1())
     dockerClient.images.pull(repository=image_digital_model_name, tag=image_digital_model_tag)
@@ -126,21 +126,21 @@ async def digital_models_new():
         container_data = data
     return {"container": container_data}
 
-@app.get("/digital-models/start/{id_container}")
+@app.post("/digital-models/start/{id_container}")
 async def digital_models_start(id_container):
     # Crear y ejecutar el contenedor
     container = dockerClient.containers.get(id_container)
     container.start()
     return {"success": True}
 
-@app.get("/digital-models/stop/{id_container}")
+@app.post("/digital-models/stop/{id_container}")
 async def digital_models_start(id_container):
     # Crear y ejecutar el contenedor
     container = dockerClient.containers.get(id_container)
     container.stop()
     return {"success": True}
 
-@app.get("/digital-models/delete/{id_container}")
+@app.post("/digital-models/delete/{id_container}")
 async def digital_models_delete(id_container):
     # Crear y ejecutar el contenedor
     container = dockerClient.containers.get(id_container)
