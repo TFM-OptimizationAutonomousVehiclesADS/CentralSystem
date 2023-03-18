@@ -125,7 +125,7 @@ async def digital_models_new(info: Request):
         "ports": {"8001/tcp": None},
         "environment": {
             "DIGITAL_MODEL_USERNAME_OWNER": info_json["DIGITAL_MODEL_USERNAME_OWNER"],
-            "DIGITAL_MODEL_RETRAINING_TEST_SIZE": int(info_json["DIGITAL_MODEL_RETRAINING_TEST_SIZE"]),
+            "DIGITAL_MODEL_RETRAINING_TEST_SIZE": float(info_json["DIGITAL_MODEL_RETRAINING_TEST_SIZE"]),
             "DIGITAL_MODEL_RETRAINING_TUNNING": int(info_json["DIGITAL_MODEL_RETRAINING_TUNNING"]),
             "DIGITAL_MODEL_RETRAINING_MIN_SPLIT": int(info_json["DIGITAL_MODEL_RETRAINING_MIN_SPLIT"]),
             "DIGITAL_MODEL_RETRAINING_MAX_SPLIT": int(info_json["DIGITAL_MODEL_RETRAINING_MAX_SPLIT"]),
@@ -136,7 +136,7 @@ async def digital_models_new(info: Request):
             "DIGITAL_MODEL_RETRAINING_RANDOM_SAMPLES": int(info_json["DIGITAL_MODEL_RETRAINING_RANDOM_SAMPLES"]),
             "DIGITAL_MODEL_SIZE_IMAGES_WIDTH": int(info_json["DIGITAL_MODEL_SIZE_IMAGES_WIDTH"]),
             "DIGITAL_MODEL_SIZE_IMAGES_HEIGHT": int(info_json["DIGITAL_MODEL_SIZE_IMAGES_HEIGHT"]),
-            "DIGITAL_MODEL_THRESHOLD_ANOMALY": int(info_json["DIGITAL_MODEL_THRESHOLD_ANOMALY"]),
+            "DIGITAL_MODEL_THRESHOLD_ANOMALY": float(info_json["DIGITAL_MODEL_THRESHOLD_ANOMALY"]),
             "DIGITAL_MODEL_SIZE_IMAGES_OPTIMIZER": "adam",
             "DIGITAL_MODEL_SIZE_IMAGES_LOSS": "binary_crossentropy",
             "DIGITAL_MODEL_SIZE_IMAGES_METRICS": json.dumps(['accuracy', 'f1_score', 'recall', 'precision']),
