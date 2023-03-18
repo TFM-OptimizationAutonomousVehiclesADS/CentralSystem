@@ -114,7 +114,7 @@ async def all_real_systems():
 
 @app.post("/digital-models/new")
 async def digital_models_new(info: Request):
-    info_json = await info.json()
+    info_json = await info.form()
     container_name = info_json["container_name"]
 
     dockerClient.images.pull(repository=image_digital_model_name, tag=image_digital_model_tag)
