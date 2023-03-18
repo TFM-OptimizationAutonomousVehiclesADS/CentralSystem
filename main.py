@@ -77,11 +77,13 @@ async def all_digital_models():
         data = {}
         data["id"] = container.id
         data["status"] = container.attrs["State"]["Status"]
+        data["state"] = container.attrs["State"]
         data["short_id"] = container.short_id
         data["name"] = container.attrs["Name"]
         data["ip"] = container.attrs["NetworkSettings"]["IPAddress"]
         data["image"] = container.attrs["Config"]["Image"]
         data["params"] = container.attrs["Config"]["Env"]
+        data["created"] = container.attrs["Created"]
         digital_models.append(data)
     return {"digital_models": digital_models}
 
