@@ -132,8 +132,10 @@ async def digital_models_new(info: Request):
             "DIGITAL_MODEL_RETRAINING_MIN_EPOCHS": int(info_json["DIGITAL_MODEL_RETRAINING_MIN_EPOCHS"]),
             "DIGITAL_MODEL_RETRAINING_MAX_EPOCHS": int(info_json["DIGITAL_MODEL_RETRAINING_MAX_EPOCHS"]),
             "DIGITAL_MODEL_RETRAINING_BEST_EPOCH": int(info_json["DIGITAL_MODEL_RETRAINING_BEST_EPOCH"] == "true"),
-            "DIGITAL_MODEL_RETRAINING_RETRAIN_WEIGHTS": int(info_json["DIGITAL_MODEL_RETRAINING_RETRAIN_WEIGHTS"] == "true"),
-            "DIGITAL_MODEL_RETRAINING_RANDOM_SAMPLES": int(info_json["DIGITAL_MODEL_RETRAINING_RANDOM_SAMPLES"] == "true"),
+            "DIGITAL_MODEL_RETRAINING_RETRAIN_WEIGHTS": int(
+                info_json["DIGITAL_MODEL_RETRAINING_RETRAIN_WEIGHTS"] == "true"),
+            "DIGITAL_MODEL_RETRAINING_RANDOM_SAMPLES": int(
+                info_json["DIGITAL_MODEL_RETRAINING_RANDOM_SAMPLES"] == "true"),
             "DIGITAL_MODEL_SIZE_IMAGES_WIDTH": int(info_json["DIGITAL_MODEL_SIZE_IMAGES_WIDTH"]),
             "DIGITAL_MODEL_SIZE_IMAGES_HEIGHT": int(info_json["DIGITAL_MODEL_SIZE_IMAGES_HEIGHT"]),
             "DIGITAL_MODEL_THRESHOLD_ANOMALY": float(info_json["DIGITAL_MODEL_THRESHOLD_ANOMALY"]),
@@ -160,6 +162,31 @@ async def digital_models_new(info: Request):
         data["params"] = container.attrs["Config"]["Env"]
         container_data = data
     return {"container": container_data}
+
+
+@app.get("/digital-models/info/{id_container}")
+async def digital_model_info(id_container):
+    containers = dockerClient.containers.list(all=True, filters={
+        "ancestor": f"{image_digital_model_name}:{image_digital_model_tag}",
+        "id": f"container:{id_container}"
+    })
+    digital_model = None
+    if not containers:
+        raise HTTPException(status_code=404, detail="Container not available")
+    container = containers[0]
+    data = {}
+    data["id"] = container.id
+    data["status"] = container.attrs["State"]["Status"]
+    data["state"] = container.attrs["State"]
+    data["short_id"] = container.short_id
+    data["name"] = container.attrs["Name"]
+    data["ip"] = container.attrs["NetworkSettings"]["IPAddress"]
+    data["image"] = container.attrs["Config"]["Image"]
+    data["params"] = container.attrs["Config"]["Env"]
+    data["created"] = container.attrs["Created"]
+
+    digital_model = data
+    return {"digital_model": digital_model}
 
 
 @app.post("/digital-models/start/{id_container}")
