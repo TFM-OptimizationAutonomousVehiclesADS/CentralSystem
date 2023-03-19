@@ -168,7 +168,7 @@ async def digital_models_new(info: Request):
 async def digital_model_info(id_container):
     containers = dockerClient.containers.list(all=True, filters={
         "ancestor": f"{image_digital_model_name}:{image_digital_model_tag}",
-        "id": f"container:{id_container}"
+        "id": f"{id_container}"
     })
     digital_model = None
     if not containers:
