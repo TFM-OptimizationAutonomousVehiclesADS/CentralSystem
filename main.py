@@ -166,14 +166,10 @@ async def digital_models_new(info: Request):
 
 @app.get("/digital-models/info/{id_container}")
 async def digital_model_info(id_container):
-    containers = dockerClient.containers.list(all=True, filters={
-        "ancestor": f"{image_digital_model_name}:{image_digital_model_tag}",
-        "id": f"{id_container}"
-    })
+    container = dockerClient.containers.get(id_container)
     digital_model = None
-    if not containers:
+    if not container:
         raise HTTPException(status_code=404, detail="Container not available")
-    container = containers[0]
     data = {}
     data["id"] = container.id
     data["status"] = container.attrs["State"]["Status"]
