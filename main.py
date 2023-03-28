@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Form
 import uvicorn
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
@@ -9,6 +9,7 @@ import json
 import hashlib
 import datetime
 from queries.Users import queries as userQueries
+from queries.MongoJSONEncoder import MongoJSONEncoder
 
 app = FastAPI(middleware=[
     Middleware(CORSMiddleware, allow_origins=["*"])
@@ -248,7 +249,7 @@ async def users_register(info: Request):
         "lastLoginAt": datetime.datetime.now()
     }
     result = userQueries.addNewUser(userJson)
-    return userJson
+    return MongoJSONEncoder().encode(userJson)
 
 
 @app.post("/users/login")
@@ -265,7 +266,7 @@ async def users_login(info: Request):
 
     if passwordHashed != userExistent["password"]:
         raise HTTPException(status_code=400, detail="Wrong password")
-    return userExistent
+    return MongoJSONEncoder().encode(userExistent)
 
 if __name__ == "__main__":
     try:
