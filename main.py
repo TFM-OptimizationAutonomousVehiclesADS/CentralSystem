@@ -9,7 +9,6 @@ import json
 import hashlib
 import datetime
 from queries.Users import queries as userQueries
-from queries.DigitalModels import queries as digitalModelQueries
 from queries.MongoJSONEncoder import MongoJSONEncoder
 
 app = FastAPI(middleware=[
@@ -80,30 +79,22 @@ async def all_images():
 
 @app.get("/digital-models/all")
 async def all_digital_models():
-    try:
-        containers = dockerClient.containers.list(all=True, filters={
-            "ancestor": f"{image_digital_model_name}:{image_digital_model_tag}"})
-        digital_models = []
-        for container in containers:
-            data = {}
-            data["id"] = container.id
-            data["status"] = container.attrs["State"]["Status"]
-            data["state"] = container.attrs["State"]
-            data["short_id"] = container.short_id
-            data["name"] = container.attrs["Name"]
-            data["ip"] = container.attrs["NetworkSettings"]["IPAddress"]
-            data["image"] = container.attrs["Config"]["Image"]
-            data["params"] = container.attrs["Config"]["Env"]
-            data["created"] = container.attrs["Created"]
-            digital_models.append(data)
-            digitalModelQueries.addOrUpdateDigitalModel(container.id, data)
-        return {"digital_models": digital_models, "docker": True}
-    except Exception as e:
-        logging.exception(e)
-
-    ## BY MONGODB
-    digital_models = digitalModelQueries.findAllDigitalModels()
-    return {"digital_model": digital_models, "docker": False}
+    containers = dockerClient.containers.list(all=True, filters={
+        "ancestor": f"{image_digital_model_name}:{image_digital_model_tag}"})
+    digital_models = []
+    for container in containers:
+        data = {}
+        data["id"] = container.id
+        data["status"] = container.attrs["State"]["Status"]
+        data["state"] = container.attrs["State"]
+        data["short_id"] = container.short_id
+        data["name"] = container.attrs["Name"]
+        data["ip"] = container.attrs["NetworkSettings"]["IPAddress"]
+        data["image"] = container.attrs["Config"]["Image"]
+        data["params"] = container.attrs["Config"]["Env"]
+        data["created"] = container.attrs["Created"]
+        digital_models.append(data)
+    return {"digital_models": digital_models, "docker": True}
 
 
 @app.get("/all_real_systems")
@@ -173,38 +164,28 @@ async def digital_models_new(info: Request):
         data["image"] = container.attrs["Config"]["Image"]
         data["params"] = container.attrs["Config"]["Env"]
         container_data = data
-        digitalModelQueries.addOrUpdateDigitalModel(container.id, container_data)
         return {"container": container_data}
 
 
 @app.get("/digital-models/info/{id_container}")
 async def digital_model_info(id_container):
-    ## BY DOCKER API
-    try:
-        container = dockerClient.containers.get(id_container)
-        digital_model = None
-        if not container:
-            raise HTTPException(status_code=404, detail="Container not available")
-        data = {}
-        data["id"] = container.id
-        data["status"] = container.attrs["State"]["Status"]
-        data["state"] = container.attrs["State"]
-        data["short_id"] = container.short_id
-        data["name"] = container.attrs["Name"]
-        data["ip"] = container.attrs["NetworkSettings"]["IPAddress"]
-        data["image"] = container.attrs["Config"]["Image"]
-        data["params"] = container.attrs["Config"]["Env"]
-        data["created"] = container.attrs["Created"]
+    container = dockerClient.containers.get(id_container)
+    digital_model = None
+    if not container:
+        raise HTTPException(status_code=404, detail="Container not available")
+    data = {}
+    data["id"] = container.id
+    data["status"] = container.attrs["State"]["Status"]
+    data["state"] = container.attrs["State"]
+    data["short_id"] = container.short_id
+    data["name"] = container.attrs["Name"]
+    data["ip"] = container.attrs["NetworkSettings"]["IPAddress"]
+    data["image"] = container.attrs["Config"]["Image"]
+    data["params"] = container.attrs["Config"]["Env"]
+    data["created"] = container.attrs["Created"]
 
-        digital_model = data
-        digitalModelQueries.addOrUpdateDigitalModel(container.id, data)
-        return {"digital_model": digital_model, "docker": True}
-    except Exception as e:
-        logging.exception(e)
-    ## BY MONGODB
-    digital_model = digitalModelQueries.findDigitalModelById(id_container)
-    digital_model = json.loads(MongoJSONEncoder().encode(digital_model))
-    return {"digital_model": digital_model, "docker": False}
+    digital_model = data
+    return {"digital_model": digital_model, "docker": True}
 
 @app.post("/digital-models/start/{id_container}")
 async def digital_models_start(id_container):
@@ -232,26 +213,19 @@ async def digital_models_delete(id_container):
 
 @app.get("/digital-models/query/{id_container}")
 async def digital_models_query(id_container, query=""):
-    try:
-        # Crear y ejecutar el contenedor
-        container = dockerClient.containers.get(id_container)
-        status = container.attrs["State"]["Status"]
-        ports = container.attrs['NetworkSettings']['Ports']
-        if status == "running":
-            ip_address = container.attrs["NetworkSettings"]["IPAddress"]
-            port_api = ports["8001/tcp"][0]["HostPort"]
-            response = requests.get(f"http://127.0.0.1:{port_api}{query}")
-            data = response.json()
+    # Crear y ejecutar el contenedor
+    container = dockerClient.containers.get(id_container)
+    status = container.attrs["State"]["Status"]
+    ports = container.attrs['NetworkSettings']['Ports']
+    if status == "running":
+        ip_address = container.attrs["NetworkSettings"]["IPAddress"]
+        port_api = ports["8001/tcp"][0]["HostPort"]
+        response = requests.get(f"http://127.0.0.1:{port_api}{query}")
+        data = response.json()
 
-            digitalModelQueries.addOrUpdateDigitalModel(container.id, {"query": {str(query): data}})
-            return {"data": data, "docker": True}
-        else:
-            raise HTTPException(status_code=400, detail="Container not available")
-    except Exception as e:
-        logging.exception(e)
-    ## BY MONGODB
-    data = digitalModelQueries.findQueryDigitalModelById(id_container, str(query))
-    return {"data": data, "docker": False}
+        return {"data": data, "docker": True}
+    else:
+        raise HTTPException(status_code=400, detail="Container not available")
 
 @app.post("/users/register")
 async def users_register(info: Request):
