@@ -249,7 +249,7 @@ async def users_register(info: Request):
         "lastLoginAt": datetime.datetime.now()
     }
     result = userQueries.addNewUser(userJson)
-    return MongoJSONEncoder().encode(userJson)
+    return json.loads(MongoJSONEncoder().encode(userJson))
 
 
 @app.post("/users/login")
@@ -266,9 +266,7 @@ async def users_login(info: Request):
 
     if passwordHashed != userExistent["password"]:
         raise HTTPException(status_code=400, detail="Wrong password")
-    logging.info(userExistent)
-    logging.info(MongoJSONEncoder().encode(userExistent))
-    return MongoJSONEncoder().encode(userExistent)
+    return json.loads(MongoJSONEncoder().encode(userExistent))
 
 if __name__ == "__main__":
     try:
