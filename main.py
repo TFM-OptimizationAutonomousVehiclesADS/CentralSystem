@@ -243,14 +243,14 @@ async def digital_models_query(id_container, query=""):
             response = requests.get(f"http://127.0.0.1:{port_api}{query}")
             data = response.json()
 
-            digitalModelQueries.addOrUpdateDigitalModel(container.id, {"query": {query: data}})
+            digitalModelQueries.addOrUpdateDigitalModel(container.id, {"query": {str(query): data}})
             return {"data": data, "docker": True}
         else:
             raise HTTPException(status_code=400, detail="Container not available")
     except Exception as e:
         logging.exception(e)
     ## BY MONGODB
-    data = digitalModelQueries.findQueryDigitalModelById(id_container, query)
+    data = digitalModelQueries.findQueryDigitalModelById(id_container, str(query))
     return {"data": data, "docker": False}
 
 @app.post("/users/register")
