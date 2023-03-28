@@ -4,9 +4,11 @@ from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 import logging
 import docker
-import uuid
 import requests
 import json
+import hashlib
+import datetime
+from queries.Users import queries as userQueries
 
 app = FastAPI(middleware=[
     Middleware(CORSMiddleware, allow_origins=["*"])
@@ -224,6 +226,46 @@ async def digital_models_query(id_container, query=""):
     else:
         raise HTTPException(status_code=400, detail="Container not available")
 
+
+@app.post("/users/register")
+async def users_register(info: Request):
+    info_json = await info.form()
+    username = info_json["username"]
+    password1 = info_json["password1"]
+    password2 = info_json["password2"]
+    assert password1 == password2
+
+    passwordHashed = hashlib.md5(password1.encode()).hexdigest()
+
+    userExistent = userQueries.getUserByUsername(username)
+    if userExistent:
+        raise HTTPException(status_code=400, detail="User already exists")
+
+    userJson = {
+        "username": username,
+        "password": passwordHashed,
+        "createdAt": datetime.datetime.now(),
+        "lastLoginAt": datetime.datetime.now()
+    }
+    result = userQueries.addNewUser(userJson)
+    return userJson
+
+
+@app.post("/users/login")
+async def users_login(info: Request):
+    info_json = await info.form()
+    username = info_json["username"]
+    password = info_json["password"]
+
+    passwordHashed = hashlib.md5(password.encode()).hexdigest()
+
+    userExistent = userQueries.getUserByUsername(username)
+    if not userExistent:
+        raise HTTPException(status_code=400, detail="User not exists")
+
+    if passwordHashed != userExistent["password"]:
+        raise HTTPException(status_code=400, detail="Wrong password")
+    return userExistent
 
 if __name__ == "__main__":
     try:
