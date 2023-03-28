@@ -266,6 +266,8 @@ async def users_login(info: Request):
 
     if passwordHashed != userExistent["password"]:
         raise HTTPException(status_code=400, detail="Wrong password")
+    logging.info(userExistent)
+    logging.info(MongoJSONEncoder().encode(userExistent))
     return MongoJSONEncoder().encode(userExistent)
 
 if __name__ == "__main__":
