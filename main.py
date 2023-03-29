@@ -231,7 +231,7 @@ async def digital_models_query(id_container, query=""):
         raise HTTPException(status_code=400, detail="Container not available")
 
 @app.post("/digital-models/predict/{id_container}/multiple")
-async def digital_models_predict_single(id_container, fileCSV: UploadFile):
+async def digital_models_predict_multiple(id_container, fileCSV: UploadFile):
     contents = await fileCSV.read()
     data = None
     samplesJson = None
@@ -253,7 +253,7 @@ async def digital_models_predict_single(id_container, fileCSV: UploadFile):
     return {"samples": samplesJson, "evaluation_dict": evaluation_dict}
 
 @app.post("/digital-models/predict/{id_container}/single")
-async def digital_models_predict_multiple(id_container, info: Request, resizedImage: UploadFile, objectImage: UploadFile, surfaceImage: UploadFile):
+async def digital_models_predict_single(id_container, info: Request, resizedImage: UploadFile, objectImage: UploadFile, surfaceImage: UploadFile):
     info_json = await info.form()
     contentsResizedImage = await resizedImage.read()
     contentsObjectImage = await objectImage.read()
@@ -274,6 +274,7 @@ async def digital_models_predict_multiple(id_container, info: Request, resizedIm
             "speed": info_json["speed"],
             "rotation_rate_z": info_json["rotation_rate_z"],
             "channel_camera": info_json["channel_camera"],
+            "anomaly": True
         }
         response = requests.post(f"http://127.0.0.1:{port_api}/predict_single", json=sampleJson)
         data = response.json()
