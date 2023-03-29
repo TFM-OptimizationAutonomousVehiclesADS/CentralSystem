@@ -253,8 +253,11 @@ async def digital_models_predict_single(id_container, fileCSV: UploadFile):
     return {"samples": samplesJson, "evaluation_dict": evaluation_dict}
 
 @app.post("/digital-models/predict/{id_container}/single")
-async def digital_models_predict_multiple(id_container, info: Request):
+async def digital_models_predict_multiple(id_container, info: Request, resizedImage: UploadFile, objectImage: UploadFile, surfaceImage: UploadFile):
     info_json = await info.form()
+    contentsResizedImage = await resizedImage.read()
+    contentsObjectImage = await objectImage.read()
+    contentsSurfaceImage = await surfaceImage.read()
     data = None
     sample_response = None
 
@@ -265,9 +268,9 @@ async def digital_models_predict_multiple(id_container, info: Request):
         ip_address = container.attrs["NetworkSettings"]["IPAddress"]
         port_api = ports["8001/tcp"][0]["HostPort"]
         sampleJson = {
-            "resizedImage": base64.b64encode(info_json["resizedImage"].read()).decode("utf-8"),
-            "objectImage": base64.b64encode(info_json["objectImage"].read()).decode("utf-8"),
-            "surfaceImage": base64.b64encode(info_json["surfaceImage"].read()).decode("utf-8"),
+            "resizedImage": base64.b64encode(contentsResizedImage).decode("utf-8"),
+            "objectImage": base64.b64encode(contentsObjectImage).decode("utf-8"),
+            "surfaceImage": base64.b64encode(contentsSurfaceImage).decode("utf-8"),
             "speed": info_json["speed"],
             "rotation_rate_z": info_json["rotation_rate_z"],
             "channel_camera": info_json["channel_camera"],
