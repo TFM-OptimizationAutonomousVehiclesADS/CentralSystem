@@ -3,3 +3,4 @@ fastapi
 docker
 uvicorn
 starlette
+pandas

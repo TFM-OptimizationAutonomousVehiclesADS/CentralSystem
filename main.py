@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, HTTPException, Form
+from fastapi import FastAPI, Request, HTTPException, Form, UploadFile
 import uvicorn
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
@@ -10,6 +10,7 @@ import hashlib
 import datetime
 from queries.Users import queries as userQueries
 from queries.MongoJSONEncoder import MongoJSONEncoder
+import pandas as pd
 
 app = FastAPI(middleware=[
     Middleware(CORSMiddleware, allow_origins=["*"])
@@ -226,6 +227,52 @@ async def digital_models_query(id_container, query=""):
         return {"data": data, "docker": True}
     else:
         raise HTTPException(status_code=400, detail="Container not available")
+
+@app.get("/digital-models/predict/{id_container}/multiple")
+async def digital_models_predict(id_container, fileCSV: UploadFile):
+    contents = await fileCSV.read()
+    data = None
+
+    samplesJson = []
+    df = pd.read_csv(contents)
+    for index, row in df.iterrows():
+        samplesJson.append(row.to_dict())
+
+    container = dockerClient.containers.get(id_container)
+    status = container.attrs["State"]["Status"]
+    ports = container.attrs['NetworkSettings']['Ports']
+    if status == "running":
+        ip_address = container.attrs["NetworkSettings"]["IPAddress"]
+        port_api = ports["8001/tcp"][0]["HostPort"]
+        response = requests.post(f"http://127.0.0.1:{port_api}/predict_multiple", json=samplesJson)
+        data = response.json()
+
+    return data
+
+@app.get("/digital-models/predict/{id_container}/single")
+async def digital_models_predict(id_container, info: Request):
+    info_json = await info.form()
+    data = None
+
+    container = dockerClient.containers.get(id_container)
+    status = container.attrs["State"]["Status"]
+    ports = container.attrs['NetworkSettings']['Ports']
+    if status == "running":
+        ip_address = container.attrs["NetworkSettings"]["IPAddress"]
+        port_api = ports["8001/tcp"][0]["HostPort"]
+        sampleJson = {
+            "resizedImage": info_json["resizedImage"],
+            "objectImage": info_json["objectImage"],
+            "surfaceImage": info_json["surfaceImage"],
+            "speed": info_json["speed"],
+            "rotation_rate_z": info_json["rotation_rate_z"],
+            "channel_camera": info_json["channel_camera"],
+        }
+        response = requests.post(f"http://127.0.0.1:{port_api}/predict_single", json=sampleJson)
+        data = response.json()
+
+    return data
+
 
 @app.post("/users/register")
 async def users_register(info: Request):
