@@ -228,7 +228,7 @@ async def digital_models_query(id_container, query=""):
     else:
         raise HTTPException(status_code=400, detail="Container not available")
 
-@app.get("/digital-models/predict/{id_container}/multiple")
+@app.post("/digital-models/predict/{id_container}/multiple")
 async def digital_models_predict(id_container, fileCSV: UploadFile):
     contents = await fileCSV.read()
     data = None
@@ -250,7 +250,7 @@ async def digital_models_predict(id_container, fileCSV: UploadFile):
 
     return {"samples": samplesJson, "evaluation_dict": evaluation_dict}
 
-@app.get("/digital-models/predict/{id_container}/single")
+@app.post("/digital-models/predict/{id_container}/single")
 async def digital_models_predict(id_container, info: Request):
     info_json = await info.form()
     data = None
