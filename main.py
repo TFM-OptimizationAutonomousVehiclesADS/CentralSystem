@@ -1,3 +1,5 @@
+import base64
+
 from fastapi import FastAPI, Request, HTTPException, Form, UploadFile
 import uvicorn
 from starlette.middleware import Middleware
@@ -263,9 +265,9 @@ async def digital_models_predict_multiple(id_container, info: Request):
         ip_address = container.attrs["NetworkSettings"]["IPAddress"]
         port_api = ports["8001/tcp"][0]["HostPort"]
         sampleJson = {
-            "resizedImage": info_json["resizedImage"],
-            "objectImage": info_json["objectImage"],
-            "surfaceImage": info_json["surfaceImage"],
+            "resizedImage": base64.b64encode(info_json["resizedImage"].read()).decode("utf-8"),
+            "objectImage": base64.b64encode(info_json["objectImage"].read()).decode("utf-8"),
+            "surfaceImage": base64.b64encode(info_json["surfaceImage"].read()).decode("utf-8"),
             "speed": info_json["speed"],
             "rotation_rate_z": info_json["rotation_rate_z"],
             "channel_camera": info_json["channel_camera"],
