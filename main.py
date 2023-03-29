@@ -232,11 +232,10 @@ async def digital_models_query(id_container, query=""):
 async def digital_models_predict(id_container, fileCSV: UploadFile):
     contents = await fileCSV.read()
     data = None
+    samplesJson = None
+    evaluation_dict = None
 
-    samplesJson = []
     df = pd.read_csv(contents)
-    for index, row in df.iterrows():
-        samplesJson.append(row.to_dict())
 
     container = dockerClient.containers.get(id_container)
     status = container.attrs["State"]["Status"]
@@ -244,15 +243,18 @@ async def digital_models_predict(id_container, fileCSV: UploadFile):
     if status == "running":
         ip_address = container.attrs["NetworkSettings"]["IPAddress"]
         port_api = ports["8001/tcp"][0]["HostPort"]
-        response = requests.post(f"http://127.0.0.1:{port_api}/predict_multiple", json=samplesJson)
-        data = response.json()
+        response = requests.post(f"http://127.0.0.1:{port_api}/predict_multiple", json=df.to_json())
+        samplesJson = response.json()
+        response = requests.post(f"http://127.0.0.1:{port_api}/evaluate_dataframe", json=df.to_json())
+        evaluation_dict = response.json()
 
-    return data
+    return {"samples": samplesJson, "evaluation_dict": evaluation_dict}
 
 @app.get("/digital-models/predict/{id_container}/single")
 async def digital_models_predict(id_container, info: Request):
     info_json = await info.form()
     data = None
+    sample_response = None
 
     container = dockerClient.containers.get(id_container)
     status = container.attrs["State"]["Status"]
