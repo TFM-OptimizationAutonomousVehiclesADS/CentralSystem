@@ -1,4 +1,5 @@
 import base64
+import io
 
 from fastapi import FastAPI, Request, HTTPException, Form, UploadFile
 import uvicorn
@@ -237,7 +238,7 @@ async def digital_models_predict_multiple(id_container, fileCSV: UploadFile):
     samplesJson = None
     evaluation_dict = None
 
-    df = pd.read_csv(fileCSV)
+    df = pd.read_csv(io.BytesIO(contents))
 
     container = dockerClient.containers.get(id_container)
     status = container.attrs["State"]["Status"]
