@@ -237,7 +237,7 @@ async def digital_models_predict_multiple(id_container, fileCSV: UploadFile):
     samplesJson = None
     evaluation_dict = None
 
-    df = pd.read_csv(fileCSV.file)
+    df = pd.read_csv(fileCSV)
 
     container = dockerClient.containers.get(id_container)
     status = container.attrs["State"]["Status"]
