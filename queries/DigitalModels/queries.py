@@ -68,7 +68,7 @@ def findDigitalModelById(digitalModelId):
     return result
 
 def findDigitalModelByIdMongo(digitalModelId):
-    result = collection.find_one({"digitalModelId": digitalModelId}, sort=[("createdAt", pymongo.DESCENDING)])
+    result = collection.find_one({"digitalModelId": digitalModelId}, {'_id': False}, sort=[("createdAt", pymongo.DESCENDING)])
     return result
 
 def findQueryDigitalModelById(digitalModelId, query):
