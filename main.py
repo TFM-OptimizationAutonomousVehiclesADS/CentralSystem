@@ -233,7 +233,7 @@ async def digital_models_query(id_container, query=""):
         response = requests.get(f"http://127.0.0.1:{port_api}{query}")
         data = response.json()
 
-        if query == "actual_evaluation_dict":
+        if "actual_evaluation_dict" in query:
             dmQueries.addOrUpdateDigitalModelMongo(id_container, data)
 
         return {"data": data, "docker": True}
