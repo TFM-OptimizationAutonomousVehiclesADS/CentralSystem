@@ -12,6 +12,7 @@ import json
 import hashlib
 import datetime
 from queries.Users import queries as userQueries
+from queries.DigitalModels import queries as dmQueries
 from queries.MongoJSONEncoder import MongoJSONEncoder
 import pandas as pd
 
@@ -97,6 +98,8 @@ async def all_digital_models():
         data["image"] = container.attrs["Config"]["Image"]
         data["params"] = container.attrs["Config"]["Env"]
         data["created"] = container.attrs["Created"]
+        dataQueriesMongo = dmQueries.findDigitalModelByIdMongo(container.id)
+        data["mongo"] = dataQueriesMongo
         digital_models.append(data)
     return {"digital_models": digital_models, "docker": True}
 
@@ -188,6 +191,9 @@ async def digital_model_info(id_container):
     data["params"] = container.attrs["Config"]["Env"]
     data["created"] = container.attrs["Created"]
 
+    dataQueriesMongo = dmQueries.findDigitalModelByIdMongo(id_container)
+    data["mongo"] = dataQueriesMongo
+
     digital_model = data
     return {"digital_model": digital_model, "docker": True}
 
@@ -226,6 +232,9 @@ async def digital_models_query(id_container, query=""):
         port_api = ports["8001/tcp"][0]["HostPort"]
         response = requests.get(f"http://127.0.0.1:{port_api}{query}")
         data = response.json()
+
+        if query == "actual_evaluation_dict":
+            dmQueries.addOrUpdateDigitalModelMongo(id_container, data)
 
         return {"data": data, "docker": True}
     else:
