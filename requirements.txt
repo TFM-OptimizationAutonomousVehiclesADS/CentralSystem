@@ -4,3 +4,4 @@ docker
 uvicorn
 starlette
 pandas
+python-multipart
