@@ -1,4 +1,6 @@
 ## HOW TO INSTALL
+
+### Install project
 > git clone https://github.com/TFM-OptimizationAutonomousVehiclesADS/CentralSystem.git
 > cd CentralSystem/
 > sudo apt-get install python3.10-venv
@@ -8,6 +10,10 @@
 > pip install -r requirements.txt
 > sudo usermod -aG docker <username>
 
+### Install MongoDB
+> Install mongodb and start as a service in localhost:27017
+
+## Run Project as a Service
 > sudo cp api.service /etc/systemd/system/api.service
 > sudo systemctl enable api.service
 > sudo systemctl start api.service
