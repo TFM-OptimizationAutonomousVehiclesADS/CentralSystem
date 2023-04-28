@@ -163,7 +163,10 @@ async def digital_models_new(info: Request):
 @app.post("/real-system/start")
 async def real_system_new():
     container_name = "real-system"
-    container = dockerClient.containers.get(container_id_real_system)
+    try:
+        container = dockerClient.containers.get(container_id_real_system)
+    except Exception as e:
+        container = None
     if container:
         container.start()
     else:
