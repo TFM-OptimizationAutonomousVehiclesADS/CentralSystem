@@ -22,9 +22,10 @@ app = FastAPI(middleware=[
 dockerClient = docker.from_env()
 
 image_digital_model_name = "jesuscumpli/model-digital"
-image_digital_model_tag = "mdv4"
-image_real_sytem_name = "jesuscumpli/real-system"
-image_real_system_tag = "rsv4"
+image_digital_model_tag = "mdv5"
+image_real_sytem_name = "jesuscumpli/model-digital"
+image_real_system_tag = "mdv5"
+container_id_real_system = "a366d74f-dc6e-4132-8df8-8e7d6c9f0b07"
 
 
 @app.get("/")
@@ -107,24 +108,6 @@ async def all_digital_models():
     return {"digital_models": digital_models, "docker": True}
 
 
-@app.get("/all_real_systems")
-async def all_real_systems():
-    containers = dockerClient.containers.list(all=True,
-                                              filters={"ancestor": f"{image_real_sytem_name}:{image_real_system_tag}"})
-    real_systems = []
-    for container in containers:
-        data = {}
-        data["id"] = container.id
-        data["status"] = container.attrs["State"]["Status"]
-        data["short_id"] = container.short_id
-        data["name"] = container.attrs["Name"]
-        data["ip"] = container.attrs["NetworkSettings"]["IPAddress"]
-        data["image"] = container.attrs["Config"]["Image"]
-        data["params"] = container.attrs["Config"]["Env"]
-        real_systems.append(data)
-    return {"real_systems": real_systems}
-
-
 @app.post("/digital-models/new")
 async def digital_models_new(info: Request):
     info_json = await info.form()
@@ -187,6 +170,7 @@ async def real_system_new(info: Request):
     options = {
         "image": f"{image_real_sytem_name}:{image_real_system_tag}",
         "name": container_name,
+        "container_id": container_id_real_system,
         "detach": True,  # Ejecutar el contenedor en segundo plano
         "ports": {"8001/tcp": None},
         "environment": {
@@ -233,12 +217,8 @@ async def real_system_new(info: Request):
 
 @app.get("/real-system/info")
 async def real_system_info():
-    containers = dockerClient.containers.list(all=True, filters={
-        "ancestor": f"{image_real_sytem_name}:{image_real_system_tag}"})
-    container = None
-    if containers and len(containers) > 0:
-        container = containers[0]
-    id_container = container.id
+    id_container = container_id_real_system
+    container = dockerClient.containers.get(id_container)
     digital_model = None
     if not container:
         raise HTTPException(status_code=404, detail="Container not available")
@@ -265,64 +245,18 @@ async def real_system_info():
 
 @app.post("/real-system/start")
 async def real_system_start():
-    containers = dockerClient.containers.list(all=True, filters={
-        "ancestor": f"{image_real_sytem_name}:{image_real_system_tag}"})
-    container = None
-    if containers and len(containers) > 0:
-        container = containers[0]
-    id_container = container.id
+    id_container = container_id_real_system
     # Ejecutar el contenedor
     container = dockerClient.containers.get(id_container)
     container.start()
     return {"success": True}
 
 
-@app.post("/real-system/replace_model/<id_container>")
-async def real_system_replace_model(id_container: str):
-    success = False
-    container_digital_model = dockerClient.containers.get(id_container)
-    containers = dockerClient.containers.list(all=True, filters={
-        "ancestor": f"{image_real_sytem_name}:{image_real_system_tag}"})
-    container_real_system = None
-    if containers and len(containers) > 0:
-        container_real_system = containers[0]
-
-    status_real_system = container_real_system.attrs["State"]["Status"]
-    status_digital_model = container_digital_model.attrs["State"]["Status"]
-
-    if status_real_system == "running" and status_digital_model == "running":
-        ports_real_system = container_real_system.attrs['NetworkSettings']['Ports']
-        ports_digital_model = container_digital_model.attrs['NetworkSettings']['Ports']
-        port_api_real_system = ports_real_system["8001/tcp"][0]["HostPort"]
-        port_api_digital_model = ports_digital_model["8001/tcp"][0]["HostPort"]
-
-        query_actual_model_file = "/actual_model_file"
-        response = requests.get(f"http://127.0.0.1:{port_api_digital_model}{query_actual_model_file}")
-        model_bytes = response.content
-
-        query_evaluation_dict = "/actual_evaluation_dict"
-        response = requests.get(f"http://127.0.0.1:{port_api_digital_model}{query_evaluation_dict}")
-        evaluation_dict = response.json()["evaluation_dict"]
-
-        query_post_replace_model = "/replace_actual_model"
-        response = requests.post(f"http://127.0.0.1:{port_api_real_system}{query_post_replace_model}",
-                                 files={"model_bytes": model_bytes}, json=evaluation_dict)
-        success = response.json()
-        success = success["success"]
-
-    return {"success": success}
-
-
 @app.post("/real-system/stop")
 async def real_system_stop():
-    containers = dockerClient.containers.list(all=True, filters={
-        "ancestor": f"{image_real_sytem_name}:{image_real_system_tag}"})
-    container = None
-    if containers and len(containers) > 0:
-        container = containers[0]
-    # Parar el contenedor
-    id_container = container.id
+    id_container = container_id_real_system
     container = dockerClient.containers.get(id_container)
+    # Parar el contenedor
     container.stop()
     return {"success": True}
 
@@ -451,6 +385,37 @@ async def digital_models_predict_single(id_container, info: Request, resizedImag
 
     return data
 
+
+@app.post("/real-system/replace_model/<id_container>")
+async def real_system_replace_model(id_container: str):
+    success = False
+    container_digital_model = dockerClient.containers.get(id_container)
+    container_real_system = dockerClient.containers.get(container_id_real_system)
+
+    status_real_system = container_real_system.attrs["State"]["Status"]
+    status_digital_model = container_digital_model.attrs["State"]["Status"]
+
+    if status_real_system == "running" and status_digital_model == "running":
+        ports_real_system = container_real_system.attrs['NetworkSettings']['Ports']
+        ports_digital_model = container_digital_model.attrs['NetworkSettings']['Ports']
+        port_api_real_system = ports_real_system["8001/tcp"][0]["HostPort"]
+        port_api_digital_model = ports_digital_model["8001/tcp"][0]["HostPort"]
+
+        query_actual_model_file = "/actual_model_file"
+        response = requests.get(f"http://127.0.0.1:{port_api_digital_model}{query_actual_model_file}")
+        model_bytes = response.content
+
+        query_evaluation_dict = "/actual_evaluation_dict"
+        response = requests.get(f"http://127.0.0.1:{port_api_digital_model}{query_evaluation_dict}")
+        evaluation_dict = response.json()["evaluation_dict"]
+
+        query_post_replace_model = "/replace_actual_model"
+        response = requests.post(f"http://127.0.0.1:{port_api_real_system}{query_post_replace_model}",
+                                 files={"model_bytes": model_bytes}, json=evaluation_dict)
+        success = response.json()
+        success = success["success"]
+
+    return {"success": success}
 
 @app.post("/digital-models/combine-models")
 async def digital_models_combine_models(info: Request):
