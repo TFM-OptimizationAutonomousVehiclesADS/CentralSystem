@@ -26,6 +26,7 @@ image_digital_model_tag = "mdv5"
 image_real_sytem_name = "jesuscumpli/model-digital"
 image_real_system_tag = "mdv5"
 container_id_real_system = "a366d74f-dc6e-4132-8df8-8e7d6c9f0b07"
+container_name = "real-system"
 
 
 @app.get("/")
@@ -162,9 +163,8 @@ async def digital_models_new(info: Request):
 
 @app.post("/real-system/start")
 async def real_system_new():
-    container_name = "real-system"
     try:
-        container = dockerClient.containers.get(container_id_real_system)
+        container = dockerClient.containers.get(container_name)
     except Exception as e:
         container = None
     if container:
@@ -173,7 +173,6 @@ async def real_system_new():
         options = {
             "image": f"{image_real_sytem_name}:{image_real_system_tag}",
             "name": container_name,
-            "container_id": container_id_real_system,
             "detach": True,  # Ejecutar el contenedor en segundo plano
             "ports": {"8001/tcp": None},
             "environment": {
@@ -220,7 +219,7 @@ async def real_system_new():
 
 @app.get("/real-system/info")
 async def real_system_info():
-    id_container = container_id_real_system
+    id_container = container_name
     try:
         container = dockerClient.containers.get(id_container)
         if not container:
@@ -251,7 +250,7 @@ async def real_system_info():
 
 @app.post("/real-system/stop")
 async def real_system_stop():
-    id_container = container_id_real_system
+    id_container = container_name
     container = dockerClient.containers.get(id_container)
     # Parar el contenedor
     container.stop()
@@ -387,7 +386,7 @@ async def digital_models_predict_single(id_container, info: Request, resizedImag
 async def real_system_replace_model(id_container: str):
     success = False
     container_digital_model = dockerClient.containers.get(id_container)
-    container_real_system = dockerClient.containers.get(container_id_real_system)
+    container_real_system = dockerClient.containers.get(container_name)
 
     status_real_system = container_real_system.attrs["State"]["Status"]
     status_digital_model = container_digital_model.attrs["State"]["Status"]
