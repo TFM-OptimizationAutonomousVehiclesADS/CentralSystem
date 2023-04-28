@@ -41,10 +41,10 @@ async def replace_actual_model():
 async def replace_actual_model(model_bytes: UploadFile, info: Request):
     info_json = await info.form()
     model_bytes = await model_bytes.read()
-    # evaluation_dict = info_json["evaluation_dict"]
+    evaluation_dict = json.loads(info_json["evaluation_dict"])
     print("SUCCESSSSSS")
     print(type(model_bytes))
-    print(type(info_json.get("evaluation_dict")))
+    print(type(evaluation_dict))
     print("SUCCESSSSSS")
     return {"success": True}
 
