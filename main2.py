@@ -44,7 +44,7 @@ async def replace_actual_model(model_bytes: UploadFile, info: Request):
     # evaluation_dict = info_json["evaluation_dict"]
     print("SUCCESSSSSS")
     print(type(model_bytes))
-    print(type(info_json))
+    print(type(info_json.get("evaluation_dict")))
     print("SUCCESSSSSS")
     return {"success": True}
 
