@@ -160,46 +160,46 @@ async def digital_models_new(info: Request):
         container_data = data
         return {"container": container_data}
 
-
-@app.post("/real-system/new")
-async def real_system_new(info: Request):
-    info_json = await info.form()
-
+@app.post("/real-system/start")
+async def real_system_new():
     container_name = "real-system"
-    # dockerClient.images.pull(repository=image_digital_model_name, tag=image_digital_model_tag)
-    options = {
-        "image": f"{image_real_sytem_name}:{image_real_system_tag}",
-        "name": container_name,
-        "container_id": container_id_real_system,
-        "detach": True,  # Ejecutar el contenedor en segundo plano
-        "ports": {"8001/tcp": None},
-        "environment": {
-            "IS_REAL_SYSTEM": int(1),
-            "DIGITAL_MODEL_NAME": container_name,
-            "DIGITAL_MODEL_USERNAME_OWNER": info_json["DIGITAL_MODEL_USERNAME_OWNER"],
-            "DIGITAL_MODEL_RETRAINING_TEST_SIZE": float(0.25),
-            "DIGITAL_MODEL_RETRAINING_TUNNING": int(0),
-            "DIGITAL_MODEL_RETRAINING_MIN_SPLIT": int(2000),
-            "DIGITAL_MODEL_RETRAINING_MAX_SPLIT": int(2000),
-            "DIGITAL_MODEL_RETRAINING_MIN_EPOCHS": int(10),
-            "DIGITAL_MODEL_RETRAINING_MAX_EPOCHS": int(100),
-            "DIGITAL_MODEL_RETRAINING_BEST_EPOCH": int(0),
-            "DIGITAL_MODEL_RETRAINING_RETRAIN_WEIGHTS": int(1),
-            "DIGITAL_MODEL_RETRAINING_RANDOM_SAMPLES": int(1),
-            "DIGITAL_MODEL_SIZE_IMAGES_WIDTH": int(80),
-            "DIGITAL_MODEL_SIZE_IMAGES_HEIGHT": int(45),
-            "DIGITAL_MODEL_THRESHOLD_ANOMALY": float(0.5),
-            "DIGITAL_MODEL_SIZE_IMAGES_OPTIMIZER": "adam",
-            "DIGITAL_MODEL_SIZE_IMAGES_LOSS": "binary_crossentropy",
-            "DIGITAL_MODEL_SIZE_IMAGES_METRICS": json.dumps(['accuracy', 'f1_score', 'recall', 'precision']),
-            "DIGITAL_MODEL_SIZE_IMAGES_METRIC_OBJECTIVE": info_json["DIGITAL_MODEL_SIZE_IMAGES_METRIC_OBJECTIVE"],
-            "DIGITAL_MODEL_SIZE_IMAGES_FLOAT_FEATURES": json.dumps(['channel_camera', 'speed', 'rotation_rate_z']),
-            "DIGITAL_MODEL_SIZE_IMAGES_IMAGES_FEATURES": json.dumps(
-                ['filename_resized_image', 'filename_objects_image', 'filename_surfaces_image']),
+    container = dockerClient.containers.get(container_id_real_system)
+    if container:
+        container.start()
+    else:
+        options = {
+            "image": f"{image_real_sytem_name}:{image_real_system_tag}",
+            "name": container_name,
+            "container_id": container_id_real_system,
+            "detach": True,  # Ejecutar el contenedor en segundo plano
+            "ports": {"8001/tcp": None},
+            "environment": {
+                "IS_REAL_SYSTEM": int(1),
+                "DIGITAL_MODEL_NAME": container_name,
+                "DIGITAL_MODEL_USERNAME_OWNER": 'admin',
+                "DIGITAL_MODEL_RETRAINING_TEST_SIZE": float(0.25),
+                "DIGITAL_MODEL_RETRAINING_TUNNING": int(0),
+                "DIGITAL_MODEL_RETRAINING_MIN_SPLIT": int(2000),
+                "DIGITAL_MODEL_RETRAINING_MAX_SPLIT": int(2000),
+                "DIGITAL_MODEL_RETRAINING_MIN_EPOCHS": int(10),
+                "DIGITAL_MODEL_RETRAINING_MAX_EPOCHS": int(100),
+                "DIGITAL_MODEL_RETRAINING_BEST_EPOCH": int(0),
+                "DIGITAL_MODEL_RETRAINING_RETRAIN_WEIGHTS": int(1),
+                "DIGITAL_MODEL_RETRAINING_RANDOM_SAMPLES": int(1),
+                "DIGITAL_MODEL_SIZE_IMAGES_WIDTH": int(80),
+                "DIGITAL_MODEL_SIZE_IMAGES_HEIGHT": int(45),
+                "DIGITAL_MODEL_THRESHOLD_ANOMALY": float(0.5),
+                "DIGITAL_MODEL_SIZE_IMAGES_OPTIMIZER": "adam",
+                "DIGITAL_MODEL_SIZE_IMAGES_LOSS": "binary_crossentropy",
+                "DIGITAL_MODEL_SIZE_IMAGES_METRICS": json.dumps(['accuracy', 'f1_score', 'recall', 'precision']),
+                "DIGITAL_MODEL_SIZE_IMAGES_METRIC_OBJECTIVE": 'f1_score',
+                "DIGITAL_MODEL_SIZE_IMAGES_FLOAT_FEATURES": json.dumps(['channel_camera', 'speed', 'rotation_rate_z']),
+                "DIGITAL_MODEL_SIZE_IMAGES_IMAGES_FEATURES": json.dumps(
+                    ['filename_resized_image', 'filename_objects_image', 'filename_surfaces_image']),
+            }
         }
-    }
-    # Crear y ejecutar el contenedor
-    container = dockerClient.containers.run(**options)
+        # Crear y ejecutar el contenedor
+        container = dockerClient.containers.run(**options)
     container_data = {}
     if container:
         data = {}
@@ -241,15 +241,6 @@ async def real_system_info():
 
     digital_model = data
     return {"real_system": digital_model, "docker": True}
-
-
-@app.post("/real-system/start")
-async def real_system_start():
-    id_container = container_id_real_system
-    # Ejecutar el contenedor
-    container = dockerClient.containers.get(id_container)
-    container.start()
-    return {"success": True}
 
 
 @app.post("/real-system/stop")
