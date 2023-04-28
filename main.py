@@ -40,7 +40,7 @@ async def all_digital_models():
         "ancestor": f"{image_digital_model_name}:{image_digital_model_tag}"})
     digital_models = []
     for container in containers:
-        if container.attrs["Name"] == container_real_system_name:
+        if container_real_system_name in container.attrs["Name"]:
             continue
         data = {}
         data["id"] = container.id
