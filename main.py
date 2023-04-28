@@ -218,9 +218,12 @@ async def real_system_new():
 @app.get("/real-system/info")
 async def real_system_info():
     id_container = container_id_real_system
-    container = dockerClient.containers.get(id_container)
-    digital_model = None
-    if not container:
+    try:
+        container = dockerClient.containers.get(id_container)
+        if not container:
+            raise HTTPException(status_code=404, detail="Container not available")
+    except Exception as e:
+        print(e)
         raise HTTPException(status_code=404, detail="Container not available")
     data = {}
     data["id"] = container.id
