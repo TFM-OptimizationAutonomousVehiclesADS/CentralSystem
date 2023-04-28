@@ -387,7 +387,7 @@ async def real_system_replace_model(id_container: str):
                                  files={"model_bytes": model_bytes}, json=evaluation_dict)
         success = response.json()
         print("RESPONSE: " + str(success))
-        success = success["success"]
+        success = success.get("success", False)
 
     return {"success": success}
 
