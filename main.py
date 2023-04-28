@@ -372,12 +372,14 @@ async def real_system_replace_model(id_container: str):
         query_actual_model_file = "/actual_model_file"
         response = requests.get(f"http://127.0.0.1:{port_api_digital_model}{query_actual_model_file}")
         model_bytes = response.content
+        print(type(model_bytes))
 
         print("QUERY: ACTUAL EVALUATION DICT")
         query_evaluation_dict = "/actual_evaluation_dict"
         response = requests.get(f"http://127.0.0.1:{port_api_digital_model}{query_evaluation_dict}")
         evaluation_dict = response.json()["evaluation_dict"]
         # print("evaluation_dict: " + str(evaluation_dict))
+        print(type(evaluation_dict))
 
         print("QUERY: REPLACE ACTUAL MODEL")
         query_post_replace_model = "/replace_actual_model"
