@@ -38,7 +38,7 @@ async def replace_actual_model():
     return {"success": True}
 
 @app.post("/replace_actual_model")
-async def replace_actual_model(model_bytes: bytes):
+async def replace_actual_model(model_bytes: UploadFile):
     print("SUCCESSSSSS")
     print(type(model_bytes))
     # print(type(evaluation_dict))
