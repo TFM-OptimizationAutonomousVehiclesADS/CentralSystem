@@ -368,18 +368,25 @@ async def real_system_replace_model(id_container: str):
         port_api_real_system = ports_real_system["8001/tcp"][0]["HostPort"]
         port_api_digital_model = ports_digital_model["8001/tcp"][0]["HostPort"]
 
+        print("QUERY: ACTUAL MODEL FILE")
         query_actual_model_file = "/actual_model_file"
         response = requests.get(f"http://127.0.0.1:{port_api_digital_model}{query_actual_model_file}")
+        print("RESPONSE: " + str(response.text))
         model_bytes = response.content
+        print("model_bytes: " + str(model_bytes))
 
+        print("QUERY: ACTUAL EVALUATION DICT")
         query_evaluation_dict = "/actual_evaluation_dict"
         response = requests.get(f"http://127.0.0.1:{port_api_digital_model}{query_evaluation_dict}")
         evaluation_dict = response.json()["evaluation_dict"]
+        print("evaluation_dict: " + str(evaluation_dict))
 
+        print("QUERY: REPLACE ACTUAL MODEL")
         query_post_replace_model = "/replace_actual_model"
         response = requests.post(f"http://127.0.0.1:{port_api_real_system}{query_post_replace_model}",
                                  files={"model_bytes": model_bytes}, json=evaluation_dict)
         success = response.json()
+        print("RESPONSE: " + str(success))
         success = success["success"]
 
     return {"success": success}
