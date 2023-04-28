@@ -307,6 +307,25 @@ async def digital_models_delete(id_container):
     container.remove()
     return {"success": True}
 
+@app.get("/real-system/query/")
+async def real_system_query(query=""):
+    # Crear y ejecutar el contenedor
+    id_container = container_name
+    container = dockerClient.containers.get(id_container)
+    status = container.attrs["State"]["Status"]
+    ports = container.attrs['NetworkSettings']['Ports']
+    if status == "running":
+        ip_address = container.attrs["NetworkSettings"]["IPAddress"]
+        port_api = ports["8001/tcp"][0]["HostPort"]
+        response = requests.get(f"http://127.0.0.1:{port_api}{query}")
+        data = response.json()
+
+        if "actual_evaluation_dict" in str(query):
+            dmQueries.addOrUpdateDigitalModelMongo(id_container, data)
+
+        return {"data": data, "docker": True}
+    else:
+        raise HTTPException(status_code=400, detail="Container not available")
 
 @app.get("/digital-models/query/{id_container}")
 async def digital_models_query(id_container, query=""):
