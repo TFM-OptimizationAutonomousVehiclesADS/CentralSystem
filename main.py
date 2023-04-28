@@ -353,7 +353,7 @@ async def digital_models_predict_single(id_container, info: Request, resizedImag
     return data
 
 
-@app.post("/real-system/replace_model/<id_container>")
+@app.post("/real-system/replace-model/{id_container}")
 async def real_system_replace_model(id_container: str):
     success = False
     container_digital_model = dockerClient.containers.get(id_container)
