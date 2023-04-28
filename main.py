@@ -113,6 +113,7 @@ async def digital_models_new(info: Request):
         container_data = data
         return {"container": container_data}
 
+
 @app.post("/real-system/start")
 async def real_system_new():
     try:
@@ -259,6 +260,7 @@ async def digital_models_delete(id_container):
     container.remove()
     return {"success": True}
 
+
 @app.get("/real-system/query/")
 async def real_system_query(query=""):
     # Crear y ejecutar el contenedor
@@ -278,6 +280,7 @@ async def real_system_query(query=""):
         return {"data": data, "docker": True}
     else:
         raise HTTPException(status_code=400, detail="Container not available")
+
 
 @app.get("/digital-models/query/{id_container}")
 async def digital_models_query(id_container, query=""):
@@ -385,12 +388,15 @@ async def real_system_replace_model(id_container: str):
         query_post_replace_model = "/replace_actual_model"
         headers = {"Content-Type": "multipart/form-data"}
         model_bytes = b"contenido del archivo"
-        response = requests.post(f"http://127.0.0.1:8081{query_post_replace_model}", files={"model_bytes": model_bytes}, timeout=20)
+        response = requests.post(f"http://127.0.0.1:8081{query_post_replace_model}", files={"model_bytes": model_bytes},
+                                 json=evaluation_dict, timeout=20)
         success = response.json()
         print("RESPONSE: " + str(success))
         success = success.get("success", False)
 
     return {"success": success}
+
+
 @app.post("/digital-models/combine-models")
 async def digital_models_combine_models(info: Request):
     info_json = await info.json()
@@ -406,7 +412,6 @@ async def digital_models_combine_models(info: Request):
         response = requests.get(f"http://127.0.0.1:{port_api_digital_model}{query_actual_model_file}", timeout=20)
         model_json = response.json()
         models_json.append(model_json)
-
 
     container_name = info_json["container_name"]
     options = {
@@ -455,6 +460,7 @@ async def digital_models_combine_models(info: Request):
         return {"container": container_data}
 
     return {}
+
 
 @app.post("/users/register")
 async def users_register(info: Request):
