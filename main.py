@@ -383,8 +383,9 @@ async def real_system_replace_model(id_container: str):
 
         print("QUERY: REPLACE ACTUAL MODEL")
         query_post_replace_model = "/replace_actual_model"
+        headers = {"Content-Type": "multipart/form-data"}
         response = requests.post(f"http://127.0.0.1:{port_api_real_system}{query_post_replace_model}",
-                                 data={"model_bytes": model_bytes, **evaluation_dict})
+                                 data={"model_bytes": model_bytes, **evaluation_dict}, headers=headers)
         success = response.json()
         print("RESPONSE: " + str(success))
         success = success.get("success", False)
