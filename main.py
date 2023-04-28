@@ -26,62 +26,12 @@ image_digital_model_tag = "mdv5"
 image_real_sytem_name = "jesuscumpli/model-digital"
 image_real_system_tag = "mdv5"
 container_id_real_system = "a366d74f-dc6e-4132-8df8-8e7d6c9f0b07"
-container_name = "real-system"
+container_real_system_name = "real-system"
 
 
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
-
-
-@app.get("/all_containers")
-async def all_containers():
-    containers = dockerClient.containers.list(all=True)
-    print(containers)
-    list_containers = []
-    for container in containers:
-        data = {}
-        data["id"] = container.id
-        data["short_id"] = container.short_id
-        data["name"] = container.attrs["Name"]
-        data["ip"] = container.attrs["NetworkSettings"]["IPAddress"]
-        data["image"] = container.attrs["Config"]["Image"]
-        data["params"] = container.attrs["Config"]["Env"]
-        list_containers.append(data)
-    return {"containers": list_containers}
-
-
-@app.get("/all_containers_by_image_name/{ancestor}")
-async def all_containers_by_image_name(ancestor):
-    containers = dockerClient.containers.list(all=True, filters={"ancestor": ancestor})
-    print(containers)
-    list_containers = []
-    for container in containers:
-        data = {}
-        data["id"] = container.id
-        data["short_id"] = container.short_id
-        data["name"] = container.attrs["Name"]
-        data["ip"] = container.attrs["NetworkSettings"]["IPAddress"]
-        data["image"] = container.attrs["Config"]["Image"]
-        data["params"] = container.attrs["Config"]["Env"]
-        list_containers.append(data)
-    return {"containers": list_containers}
-
-
-@app.get("/all_images")
-async def all_images():
-    images = dockerClient.images.list(all=True)
-    print(images)
-    list_images = []
-    for image in images:
-        data = {}
-        data["id"] = image.id
-        data["short_id"] = image.short_id
-        data["tags"] = image.tags
-        data["labels"] = image.labels
-        data["attrs"] = image.attrs
-        list_images.append(data)
-    return {"images": list_images}
 
 
 @app.get("/digital-models/all")
@@ -90,6 +40,8 @@ async def all_digital_models():
         "ancestor": f"{image_digital_model_name}:{image_digital_model_tag}"})
     digital_models = []
     for container in containers:
+        if container.attrs["Name"] == container_real_system_name:
+            continue
         data = {}
         data["id"] = container.id
         data["status"] = container.attrs["State"]["Status"]
@@ -164,7 +116,7 @@ async def digital_models_new(info: Request):
 @app.post("/real-system/start")
 async def real_system_new():
     try:
-        container = dockerClient.containers.get(container_name)
+        container = dockerClient.containers.get(container_real_system_name)
     except Exception as e:
         container = None
     if container:
@@ -172,12 +124,12 @@ async def real_system_new():
     else:
         options = {
             "image": f"{image_real_sytem_name}:{image_real_system_tag}",
-            "name": container_name,
+            "name": container_real_system_name,
             "detach": True,  # Ejecutar el contenedor en segundo plano
             "ports": {"8001/tcp": None},
             "environment": {
                 "IS_REAL_SYSTEM": int(1),
-                "DIGITAL_MODEL_NAME": container_name,
+                "DIGITAL_MODEL_NAME": container_real_system_name,
                 "DIGITAL_MODEL_USERNAME_OWNER": 'admin',
                 "DIGITAL_MODEL_RETRAINING_TEST_SIZE": float(0.25),
                 "DIGITAL_MODEL_RETRAINING_TUNNING": int(0),
@@ -219,7 +171,7 @@ async def real_system_new():
 
 @app.get("/real-system/info")
 async def real_system_info():
-    id_container = container_name
+    id_container = container_real_system_name
     try:
         container = dockerClient.containers.get(id_container)
         if not container:
@@ -250,7 +202,7 @@ async def real_system_info():
 
 @app.post("/real-system/stop")
 async def real_system_stop():
-    id_container = container_name
+    id_container = container_real_system_name
     container = dockerClient.containers.get(id_container)
     # Parar el contenedor
     container.stop()
@@ -310,7 +262,7 @@ async def digital_models_delete(id_container):
 @app.get("/real-system/query/")
 async def real_system_query(query=""):
     # Crear y ejecutar el contenedor
-    id_container = container_name
+    id_container = container_real_system_name
     container = dockerClient.containers.get(id_container)
     status = container.attrs["State"]["Status"]
     ports = container.attrs['NetworkSettings']['Ports']
@@ -405,7 +357,7 @@ async def digital_models_predict_single(id_container, info: Request, resizedImag
 async def real_system_replace_model(id_container: str):
     success = False
     container_digital_model = dockerClient.containers.get(id_container)
-    container_real_system = dockerClient.containers.get(container_name)
+    container_real_system = dockerClient.containers.get(container_real_system_name)
 
     status_real_system = container_real_system.attrs["State"]["Status"]
     status_digital_model = container_digital_model.attrs["State"]["Status"]
