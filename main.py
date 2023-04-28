@@ -384,29 +384,12 @@ async def real_system_replace_model(id_container: str):
         print("QUERY: REPLACE ACTUAL MODEL")
         query_post_replace_model = "/replace_actual_model2"
         headers = {"Content-Type": "multipart/form-data"}
-        response = requests.post(f"http://108.143.188.39:8081{query_post_replace_model}", timeout=20)
+        response = requests.post(f"http://127.0.0.1:8081{query_post_replace_model}", timeout=20)
         success = response.json()
         print("RESPONSE: " + str(success))
         success = success.get("success", False)
 
     return {"success": success}
-
-@app.post("/replace_actual_model2")
-async def replace_actual_model():
-    print("SUCCESSSSSS")
-    # print(type(model_bytes))
-    # print(type(evaluation_dict))
-    print("SUCCESSSSSS")
-    return {"success": True}
-
-@app.post("/replace_actual_model")
-async def replace_actual_model(model_bytes: bytes, evaluation_dict: dict):
-    print("SUCCESSSSSS")
-    print(type(model_bytes))
-    print(type(evaluation_dict))
-    print("SUCCESSSSSS")
-    return {"success": True}
-
 @app.post("/digital-models/combine-models")
 async def digital_models_combine_models(info: Request):
     info_json = await info.json()
