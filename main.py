@@ -24,7 +24,7 @@ dockerClient = docker.from_env()
 image_digital_model_name = "jesuscumpli/model-digital"
 image_digital_model_tag = "mdv4"
 image_real_sytem_name = "jesuscumpli/real-system"
-image_real_system_tag = "rsv2"
+image_real_system_tag = "rsv4"
 
 
 @app.get("/")
@@ -98,8 +98,11 @@ async def all_digital_models():
         data["image"] = container.attrs["Config"]["Image"]
         data["params"] = container.attrs["Config"]["Env"]
         data["created"] = container.attrs["Created"]
-        dataQueriesMongo = dmQueries.findDigitalModelByIdMongo(container.id)
-        data["mongo"] = dataQueriesMongo
+        try:
+            dataQueriesMongo = dmQueries.findDigitalModelByIdMongo(container.id)
+            data["mongo"] = dataQueriesMongo
+        except Exception as e:
+            print(e)
         digital_models.append(data)
     return {"digital_models": digital_models, "docker": True}
 
@@ -127,13 +130,14 @@ async def digital_models_new(info: Request):
     info_json = await info.form()
 
     container_name = info_json["container_name"]
-    dockerClient.images.pull(repository=image_digital_model_name, tag=image_digital_model_tag)
+    # dockerClient.images.pull(repository=image_digital_model_name, tag=image_digital_model_tag)
     options = {
         "image": f"{image_digital_model_name}:{image_digital_model_tag}",
         "name": container_name,
         "detach": True,  # Ejecutar el contenedor en segundo plano
         "ports": {"8001/tcp": None},
         "environment": {
+            "DIGITAL_MODEL_NAME": container_name,
             "DIGITAL_MODEL_USERNAME_OWNER": info_json["DIGITAL_MODEL_USERNAME_OWNER"],
             "DIGITAL_MODEL_RETRAINING_TEST_SIZE": float(info_json["DIGITAL_MODEL_RETRAINING_TEST_SIZE"]),
             "DIGITAL_MODEL_RETRAINING_TUNNING": int(info_json["DIGITAL_MODEL_RETRAINING_TUNNING"] == "true"),
@@ -174,6 +178,155 @@ async def digital_models_new(info: Request):
         return {"container": container_data}
 
 
+@app.post("/real-system/new")
+async def real_system_new(info: Request):
+    info_json = await info.form()
+
+    container_name = "real-system"
+    # dockerClient.images.pull(repository=image_digital_model_name, tag=image_digital_model_tag)
+    options = {
+        "image": f"{image_real_sytem_name}:{image_real_system_tag}",
+        "name": container_name,
+        "detach": True,  # Ejecutar el contenedor en segundo plano
+        "ports": {"8001/tcp": None},
+        "environment": {
+            "IS_REAL_SYSTEM": int(1),
+            "DIGITAL_MODEL_NAME": container_name,
+            "DIGITAL_MODEL_USERNAME_OWNER": info_json["DIGITAL_MODEL_USERNAME_OWNER"],
+            "DIGITAL_MODEL_RETRAINING_TEST_SIZE": float(0.25),
+            "DIGITAL_MODEL_RETRAINING_TUNNING": int(0),
+            "DIGITAL_MODEL_RETRAINING_MIN_SPLIT": int(2000),
+            "DIGITAL_MODEL_RETRAINING_MAX_SPLIT": int(2000),
+            "DIGITAL_MODEL_RETRAINING_MIN_EPOCHS": int(10),
+            "DIGITAL_MODEL_RETRAINING_MAX_EPOCHS": int(100),
+            "DIGITAL_MODEL_RETRAINING_BEST_EPOCH": int(0),
+            "DIGITAL_MODEL_RETRAINING_RETRAIN_WEIGHTS": int(1),
+            "DIGITAL_MODEL_RETRAINING_RANDOM_SAMPLES": int(1),
+            "DIGITAL_MODEL_SIZE_IMAGES_WIDTH": int(80),
+            "DIGITAL_MODEL_SIZE_IMAGES_HEIGHT": int(45),
+            "DIGITAL_MODEL_THRESHOLD_ANOMALY": float(0.5),
+            "DIGITAL_MODEL_SIZE_IMAGES_OPTIMIZER": "adam",
+            "DIGITAL_MODEL_SIZE_IMAGES_LOSS": "binary_crossentropy",
+            "DIGITAL_MODEL_SIZE_IMAGES_METRICS": json.dumps(['accuracy', 'f1_score', 'recall', 'precision']),
+            "DIGITAL_MODEL_SIZE_IMAGES_METRIC_OBJECTIVE": info_json["DIGITAL_MODEL_SIZE_IMAGES_METRIC_OBJECTIVE"],
+            "DIGITAL_MODEL_SIZE_IMAGES_FLOAT_FEATURES": json.dumps(['channel_camera', 'speed', 'rotation_rate_z']),
+            "DIGITAL_MODEL_SIZE_IMAGES_IMAGES_FEATURES": json.dumps(
+                ['filename_resized_image', 'filename_objects_image', 'filename_surfaces_image']),
+        }
+    }
+    # Crear y ejecutar el contenedor
+    container = dockerClient.containers.run(**options)
+    container_data = {}
+    if container:
+        data = {}
+        data["id"] = container.id
+        data["status"] = container.attrs["State"]["Status"]
+        data["short_id"] = container.short_id
+        data["name"] = container.attrs["Name"]
+        data["ip"] = container.attrs["NetworkSettings"]["IPAddress"]
+        data["image"] = container.attrs["Config"]["Image"]
+        data["params"] = container.attrs["Config"]["Env"]
+        container_data = data
+        return {"container": container_data}
+    return {"success": False}, 400
+
+
+@app.get("/real-system/info")
+async def real_system_info():
+    containers = dockerClient.containers.list(all=True, filters={
+        "ancestor": f"{image_real_sytem_name}:{image_real_system_tag}"})
+    container = None
+    if containers and len(containers) > 0:
+        container = containers[0]
+    id_container = container.id
+    digital_model = None
+    if not container:
+        raise HTTPException(status_code=404, detail="Container not available")
+    data = {}
+    data["id"] = container.id
+    data["status"] = container.attrs["State"]["Status"]
+    data["state"] = container.attrs["State"]
+    data["short_id"] = container.short_id
+    data["name"] = container.attrs["Name"]
+    data["ip"] = container.attrs["NetworkSettings"]["IPAddress"]
+    data["image"] = container.attrs["Config"]["Image"]
+    data["params"] = container.attrs["Config"]["Env"]
+    data["created"] = container.attrs["Created"]
+
+    try:
+        dataQueriesMongo = dmQueries.findDigitalModelByIdMongo(id_container)
+        data["mongo"] = dataQueriesMongo
+    except Exception as e:
+        print(e)
+
+    digital_model = data
+    return {"real_system": digital_model, "docker": True}
+
+
+@app.post("/real-system/start")
+async def real_system_start():
+    containers = dockerClient.containers.list(all=True, filters={
+        "ancestor": f"{image_real_sytem_name}:{image_real_system_tag}"})
+    container = None
+    if containers and len(containers) > 0:
+        container = containers[0]
+    id_container = container.id
+    # Ejecutar el contenedor
+    container = dockerClient.containers.get(id_container)
+    container.start()
+    return {"success": True}
+
+
+@app.post("/real-system/replace_model/<id_container>")
+async def real_system_replace_model(id_container: str):
+    success = False
+    container_digital_model = dockerClient.containers.get(id_container)
+    containers = dockerClient.containers.list(all=True, filters={
+        "ancestor": f"{image_real_sytem_name}:{image_real_system_tag}"})
+    container_real_system = None
+    if containers and len(containers) > 0:
+        container_real_system = containers[0]
+
+    status_real_system = container_real_system.attrs["State"]["Status"]
+    status_digital_model = container_digital_model.attrs["State"]["Status"]
+
+    if status_real_system == "running" and status_digital_model == "running":
+        ports_real_system = container_real_system.attrs['NetworkSettings']['Ports']
+        ports_digital_model = container_digital_model.attrs['NetworkSettings']['Ports']
+        port_api_real_system = ports_real_system["8001/tcp"][0]["HostPort"]
+        port_api_digital_model = ports_digital_model["8001/tcp"][0]["HostPort"]
+
+        query_actual_model_file = "/actual_model_file"
+        response = requests.get(f"http://127.0.0.1:{port_api_digital_model}{query_actual_model_file}")
+        model_bytes = response.content
+
+        query_evaluation_dict = "/actual_evaluation_dict"
+        response = requests.get(f"http://127.0.0.1:{port_api_digital_model}{query_evaluation_dict}")
+        evaluation_dict = response.json()["evaluation_dict"]
+
+        query_post_replace_model = "/replace_actual_model"
+        response = requests.post(f"http://127.0.0.1:{port_api_real_system}{query_post_replace_model}",
+                                 files={"model_bytes": model_bytes}, json=evaluation_dict)
+        success = response.json()
+        success = success["success"]
+
+    return {"success": success}
+
+
+@app.post("/real-system/stop")
+async def real_system_stop():
+    containers = dockerClient.containers.list(all=True, filters={
+        "ancestor": f"{image_real_sytem_name}:{image_real_system_tag}"})
+    container = None
+    if containers and len(containers) > 0:
+        container = containers[0]
+    # Parar el contenedor
+    id_container = container.id
+    container = dockerClient.containers.get(id_container)
+    container.stop()
+    return {"success": True}
+
+
 @app.get("/digital-models/info/{id_container}")
 async def digital_model_info(id_container):
     container = dockerClient.containers.get(id_container)
@@ -191,11 +344,15 @@ async def digital_model_info(id_container):
     data["params"] = container.attrs["Config"]["Env"]
     data["created"] = container.attrs["Created"]
 
-    dataQueriesMongo = dmQueries.findDigitalModelByIdMongo(id_container)
-    data["mongo"] = dataQueriesMongo
+    try:
+        dataQueriesMongo = dmQueries.findDigitalModelByIdMongo(id_container)
+        data["mongo"] = dataQueriesMongo
+    except Exception as e:
+        print(e)
 
     digital_model = data
     return {"digital_model": digital_model, "docker": True}
+
 
 @app.post("/digital-models/start/{id_container}")
 async def digital_models_start(id_container):
@@ -240,6 +397,7 @@ async def digital_models_query(id_container, query=""):
     else:
         raise HTTPException(status_code=400, detail="Container not available")
 
+
 @app.post("/digital-models/predict/{id_container}/multiple")
 async def digital_models_predict_multiple(id_container, fileCSV: UploadFile):
     contents = await fileCSV.read()
@@ -262,8 +420,10 @@ async def digital_models_predict_multiple(id_container, fileCSV: UploadFile):
 
     return {"samples": samplesJson, "evaluation_dict": evaluation_dict}
 
+
 @app.post("/digital-models/predict/{id_container}/single")
-async def digital_models_predict_single(id_container, info: Request, resizedImage: UploadFile, objectImage: UploadFile, surfaceImage: UploadFile):
+async def digital_models_predict_single(id_container, info: Request, resizedImage: UploadFile, objectImage: UploadFile,
+                                        surfaceImage: UploadFile):
     info_json = await info.form()
     contentsResizedImage = await resizedImage.read()
     contentsObjectImage = await objectImage.read()
@@ -291,6 +451,71 @@ async def digital_models_predict_single(id_container, info: Request, resizedImag
 
     return data
 
+
+@app.post("/digital-models/combine-models")
+async def digital_models_combine_models(info: Request):
+    info_json = await info.json()
+    list_id_containers = info_json["digital-models-selected"]
+
+    models_json = []
+    for id_container in list_id_containers:
+        container_digital_model = dockerClient.containers.get(id_container)
+        status_digital_model = container_digital_model.attrs["State"]["Status"]
+        ports_digital_model = container_digital_model.attrs['NetworkSettings']['Ports']
+        port_api_digital_model = ports_digital_model["8001/tcp"][0]["HostPort"]
+        query_actual_model_file = "/actual_model_json"
+        response = requests.get(f"http://127.0.0.1:{port_api_digital_model}{query_actual_model_file}")
+        model_json = response.json()
+        models_json.append(model_json)
+
+
+    container_name = info_json["container_name"]
+    options = {
+        "image": f"{image_digital_model_name}:{image_digital_model_tag}",
+        "name": container_name,
+        "detach": True,  # Ejecutar el contenedor en segundo plano
+        "ports": {"8001/tcp": None},
+        "environment": {
+            "DIGITAL_MODEL_NAME": container_name,
+            "DIGITAL_MODEL_COMBINE_MODEL_CONFIGS": json.dumps(models_json),
+            "DIGITAL_MODEL_USERNAME_OWNER": info_json["DIGITAL_MODEL_USERNAME_OWNER"],
+            "DIGITAL_MODEL_RETRAINING_TEST_SIZE": float(0.25),
+            "DIGITAL_MODEL_RETRAINING_TUNNING": int(0),
+            "DIGITAL_MODEL_RETRAINING_MIN_SPLIT": int(2000),
+            "DIGITAL_MODEL_RETRAINING_MAX_SPLIT": int(5000),
+            "DIGITAL_MODEL_RETRAINING_MIN_EPOCHS": int(10),
+            "DIGITAL_MODEL_RETRAINING_MAX_EPOCHS": int(20),
+            "DIGITAL_MODEL_RETRAINING_BEST_EPOCH": int(0),
+            "DIGITAL_MODEL_RETRAINING_RETRAIN_WEIGHTS": int(1),
+            "DIGITAL_MODEL_RETRAINING_RANDOM_SAMPLES": int(1),
+            "DIGITAL_MODEL_SIZE_IMAGES_WIDTH": int(80),
+            "DIGITAL_MODEL_SIZE_IMAGES_HEIGHT": int(45),
+            "DIGITAL_MODEL_THRESHOLD_ANOMALY": float(0.5),
+            "DIGITAL_MODEL_SIZE_IMAGES_OPTIMIZER": "adam",
+            "DIGITAL_MODEL_SIZE_IMAGES_LOSS": "binary_crossentropy",
+            "DIGITAL_MODEL_SIZE_IMAGES_METRICS": json.dumps(['accuracy', 'f1_score', 'recall', 'precision']),
+            "DIGITAL_MODEL_SIZE_IMAGES_METRIC_OBJECTIVE": info_json["DIGITAL_MODEL_SIZE_IMAGES_METRIC_OBJECTIVE"],
+            "DIGITAL_MODEL_SIZE_IMAGES_FLOAT_FEATURES": json.dumps(['channel_camera', 'speed', 'rotation_rate_z']),
+            "DIGITAL_MODEL_SIZE_IMAGES_IMAGES_FEATURES": json.dumps(
+                ['filename_resized_image', 'filename_objects_image', 'filename_surfaces_image']),
+        }
+    }
+    # Crear y ejecutar el contenedor
+    container = dockerClient.containers.run(**options)
+    container_data = {}
+    if container:
+        data = {}
+        data["id"] = container.id
+        data["status"] = container.attrs["State"]["Status"]
+        data["short_id"] = container.short_id
+        data["name"] = container.attrs["Name"]
+        data["ip"] = container.attrs["NetworkSettings"]["IPAddress"]
+        data["image"] = container.attrs["Config"]["Image"]
+        data["params"] = container.attrs["Config"]["Env"]
+        container_data = data
+        return {"container": container_data}
+
+    return {}
 
 @app.post("/users/register")
 async def users_register(info: Request):
@@ -331,6 +556,7 @@ async def users_login(info: Request):
     if passwordHashed != userExistent["password"]:
         raise HTTPException(status_code=400, detail="Wrong password")
     return json.loads(MongoJSONEncoder().encode(userExistent))
+
 
 if __name__ == "__main__":
     try:
