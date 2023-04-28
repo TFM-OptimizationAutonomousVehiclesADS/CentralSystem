@@ -269,7 +269,7 @@ async def real_system_query(query=""):
     if status == "running":
         ip_address = container.attrs["NetworkSettings"]["IPAddress"]
         port_api = ports["8001/tcp"][0]["HostPort"]
-        response = requests.get(f"http://127.0.0.1:{port_api}{query}")
+        response = requests.get(f"http://127.0.0.1:{port_api}{query}", timeout=20)
         data = response.json()
 
         if "actual_evaluation_dict" in str(query):
@@ -288,7 +288,7 @@ async def digital_models_query(id_container, query=""):
     if status == "running":
         ip_address = container.attrs["NetworkSettings"]["IPAddress"]
         port_api = ports["8001/tcp"][0]["HostPort"]
-        response = requests.get(f"http://127.0.0.1:{port_api}{query}")
+        response = requests.get(f"http://127.0.0.1:{port_api}{query}", timeout=20)
         data = response.json()
 
         if "actual_evaluation_dict" in str(query):
@@ -314,9 +314,9 @@ async def digital_models_predict_multiple(id_container, fileCSV: UploadFile):
     if status == "running":
         ip_address = container.attrs["NetworkSettings"]["IPAddress"]
         port_api = ports["8001/tcp"][0]["HostPort"]
-        response = requests.post(f"http://127.0.0.1:{port_api}/predict_multiple", json=df.to_json())
+        response = requests.post(f"http://127.0.0.1:{port_api}/predict_multiple", json=df.to_json(), timeout=20)
         samplesJson = response.json()
-        response = requests.post(f"http://127.0.0.1:{port_api}/evaluate_dataframe", json=df.to_json())
+        response = requests.post(f"http://127.0.0.1:{port_api}/evaluate_dataframe", json=df.to_json(), timeout=20)
         evaluation_dict = response.json()
 
     return {"samples": samplesJson, "evaluation_dict": evaluation_dict}
@@ -347,7 +347,7 @@ async def digital_models_predict_single(id_container, info: Request, resizedImag
             "channel_camera": info_json["channel_camera"],
             "anomaly": True
         }
-        response = requests.post(f"http://127.0.0.1:{port_api}/predict_single", json=sampleJson)
+        response = requests.post(f"http://127.0.0.1:{port_api}/predict_single", json=sampleJson, timeout=20)
         data = response.json()
 
     return data
@@ -370,13 +370,13 @@ async def real_system_replace_model(id_container: str):
 
         print("QUERY: ACTUAL MODEL FILE")
         query_actual_model_file = "/actual_model_file"
-        response = requests.get(f"http://127.0.0.1:{port_api_digital_model}{query_actual_model_file}")
+        response = requests.get(f"http://127.0.0.1:{port_api_digital_model}{query_actual_model_file}", timeout=20)
         model_bytes = response.content
         print(type(model_bytes))
 
         print("QUERY: ACTUAL EVALUATION DICT")
         query_evaluation_dict = "/actual_evaluation_dict"
-        response = requests.get(f"http://127.0.0.1:{port_api_digital_model}{query_evaluation_dict}")
+        response = requests.get(f"http://127.0.0.1:{port_api_digital_model}{query_evaluation_dict}", timeout=20)
         evaluation_dict = response.json()["evaluation_dict"]
         # print("evaluation_dict: " + str(evaluation_dict))
         print(type(evaluation_dict))
@@ -384,7 +384,7 @@ async def real_system_replace_model(id_container: str):
         print("QUERY: REPLACE ACTUAL MODEL")
         query_post_replace_model = "/replace_actual_model"
         headers = {"Content-Type": "multipart/form-data"}
-        response = requests.post(f"http://127.0.0.1:8080{query_post_replace_model}", data={"model_bytes": model_bytes}, json=evaluation_dict)
+        response = requests.post(f"http://127.0.0.1:8080{query_post_replace_model}", data={"model_bytes": model_bytes}, json=evaluation_dict, timeout=20)
         success = response.json()
         print("RESPONSE: " + str(success))
         success = success.get("success", False)
@@ -411,7 +411,7 @@ async def digital_models_combine_models(info: Request):
         ports_digital_model = container_digital_model.attrs['NetworkSettings']['Ports']
         port_api_digital_model = ports_digital_model["8001/tcp"][0]["HostPort"]
         query_actual_model_file = "/actual_model_json"
-        response = requests.get(f"http://127.0.0.1:{port_api_digital_model}{query_actual_model_file}")
+        response = requests.get(f"http://127.0.0.1:{port_api_digital_model}{query_actual_model_file}", timeout=20)
         model_json = response.json()
         models_json.append(model_json)
 
