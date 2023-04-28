@@ -38,10 +38,10 @@ async def replace_actual_model():
     return {"success": True}
 
 @app.post("/replace_actual_model")
-async def replace_actual_model(model_bytes: bytes, evaluation_dict: dict):
+async def replace_actual_model(model_bytes: bytes):
     print("SUCCESSSSSS")
     print(type(model_bytes))
-    print(type(evaluation_dict))
+    # print(type(evaluation_dict))
     print("SUCCESSSSSS")
     return {"success": True}
 
