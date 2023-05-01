@@ -510,7 +510,7 @@ async def users_login(info: Request):
 if __name__ == "__main__":
     try:
         ip = "0.0.0.0"
-        port = "8080"
+        port = "80"
         uvicorn.run(app, host=ip, port=int(port))
     except Exception as e:
         logging.exception("Error en API: " + str(e))
