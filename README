@@ -4,6 +4,8 @@
 > git clone https://github.com/TFM-OptimizationAutonomousVehiclesADS/CentralSystem.git
 > cd CentralSystem/
 > sudo apt-get install python3.10-venv
+> sudo chown -R ubuntu /opt
+> sudo chmod -R u+rwx /opt
 > python3 -m venv venv
 > sudo apt install uvicorn
 > source venv/bin/activate
