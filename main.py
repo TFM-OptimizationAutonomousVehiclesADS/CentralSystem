@@ -72,7 +72,8 @@ async def digital_models_new(info: Request):
         "name": container_name,
         "detach": True,  # Ejecutar el contenedor en segundo plano
         "ports": {"8001/tcp": None},
-        "cpus": ".25",  # Limita el uso de CPU
+        "cpu_period": 100000,  # Limita el uso de CPU
+        "cpu_quota": 25000,  # Limita el uso de CPU
         "environment": {
             "DIGITAL_MODEL_NAME": container_name,
             "DIGITAL_MODEL_USERNAME_OWNER": info_json["DIGITAL_MODEL_USERNAME_OWNER"],
@@ -128,7 +129,8 @@ async def real_system_new():
             "image": f"{image_real_sytem_name}:{image_real_system_tag}",
             "name": container_real_system_name,
             "detach": True,  # Ejecutar el contenedor en segundo plano
-            "cpus": ".25",  # Limita el uso de CPU
+            "cpu_period": 100000,  # Limita el uso de CPU
+            "cpu_quota": 25000,  # Limita el uso de CPU
             "ports": {"8001/tcp": None},
             "environment": {
                 "IS_REAL_SYSTEM": int(1),
@@ -418,7 +420,8 @@ async def digital_models_combine_models(info: Request):
         "image": f"{image_digital_model_name}:{image_digital_model_tag}",
         "name": container_name,
         "detach": True,  # Ejecutar el contenedor en segundo plano
-        "cpus": ".25",  # Limita el uso de CPU
+        "cpu_period": 100000,  # Limita el uso de CPU
+        "cpu_quota": 25000,  # Limita el uso de CPU
         "ports": {"8001/tcp": None},
         "environment": {
             "DIGITAL_MODEL_NAME": container_name,
