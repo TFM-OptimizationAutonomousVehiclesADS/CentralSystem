@@ -67,6 +67,10 @@ async def digital_models_new(info: Request):
 
     container_name = info_json["container_name"]
     # dockerClient.images.pull(repository=image_digital_model_name, tag=image_digital_model_tag)
+
+    modelVersion = "RANDOM"
+    if int(info_json["DIGITAL_MODEL_RETRAINING_TUNNING"] == "true") == 1:
+        modelVersion = "TUNNING"
     options = {
         "image": f"{image_digital_model_name}:{image_digital_model_tag}",
         "name": container_name,
@@ -77,6 +81,7 @@ async def digital_models_new(info: Request):
         "environment": {
             "DIGITAL_MODEL_NAME": container_name,
             "DIGITAL_MODEL_USERNAME_OWNER": info_json["DIGITAL_MODEL_USERNAME_OWNER"],
+            "DIGITAL_MODEL_VERSION": modelVersion,
             "DIGITAL_MODEL_RETRAINING_TEST_SIZE": float(info_json["DIGITAL_MODEL_RETRAINING_TEST_SIZE"]),
             "DIGITAL_MODEL_RETRAINING_TUNNING": int(info_json["DIGITAL_MODEL_RETRAINING_TUNNING"] == "true"),
             "DIGITAL_MODEL_RETRAINING_MIN_SPLIT": int(info_json["DIGITAL_MODEL_RETRAINING_MIN_SPLIT"]),
@@ -135,6 +140,7 @@ async def real_system_new():
             "environment": {
                 "IS_REAL_SYSTEM": int(1),
                 "DIGITAL_MODEL_NAME": container_real_system_name,
+                "DIGITAL_MODEL_VERSION": "RANDOM",
                 "DIGITAL_MODEL_USERNAME_OWNER": 'admin',
                 "DIGITAL_MODEL_RETRAINING_TEST_SIZE": float(0.25),
                 "DIGITAL_MODEL_RETRAINING_TUNNING": int(0),
