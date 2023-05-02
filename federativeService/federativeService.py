@@ -159,8 +159,11 @@ if __name__ == "__main__":
                         "success")
                 else:
                     logging.exception("No se ha podido reemplazar el modelo digital")
+            else:
+                logging.info("NO SE HA ENCONTRADO NINGUN MODELO MEJOR")
 
         except Exception as e:
             logging.exception("Error en Federative Service: " + str(e))
 
+        logging.info("SLEEPING...")
         time.sleep(SLEEP_TIME)
