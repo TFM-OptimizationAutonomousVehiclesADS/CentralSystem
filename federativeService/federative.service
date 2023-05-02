@@ -1,10 +1,10 @@
 [Unit]
-Description=API Central System Service
+Description=Federative Service
 After=multi-user.target
 [Service]
 Type=simple
 Restart=always
 Environment="PYTHONPATH=/opt/CentralSystem/"
-ExecStart=/opt/CentralSystem/venv/bin/python3 /opt/CentralSystem/main.py
+ExecStart=/opt/CentralSystem//venv/bin/python3 /opt/CentralSystem/federativeService/federativeService.py
 [Install]
 WantedBy=multi-user.target
