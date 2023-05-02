@@ -440,8 +440,8 @@ async def digital_models_share_data(info: Request):
 
 @app.post("/digital-models/combine-models")
 async def digital_models_combine_models(info: Request):
-    info_json = await info.json()
-    list_id_containers = info_json["digital-models-selected"]
+    info_json = await info.form()
+    list_id_containers = json.loads(info_json["digitalModelsSelected"])
 
     models_json = []
     for id_container in list_id_containers:
