@@ -105,6 +105,8 @@ if __name__ == "__main__":
     logging.info("START FEDERATIVE SERVICE")
     dockerClient = docker.from_env()
 
+    exit(0)
+
     while True:
         try:
             logging.info("CHECKING METRICS OF REAL SYSTEM")
