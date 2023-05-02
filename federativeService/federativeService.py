@@ -134,9 +134,11 @@ if __name__ == "__main__":
                         idDigitalModel = digitalModel["id"]
                         container = dockerClient.containers.get(idDigitalModel)
 
-                        digitalModelVersion = container.attrs["Config"]["Env"]["DIGITAL_MODEL_VERSION"]
-                        if digitalModelVersion == "MULTIPLE":
-                            continue
+                        for param in container.attrs["Config"]["Env"]:
+                            logging.info(param)
+                            if "DIGITAL_MODEL_VERSION=MULTIPLE" == param:
+                                logging.info("SKIP")
+                                continue
 
                         port_api = container.attrs['NetworkSettings']['Ports']["8001/tcp"][0]["HostPort"]
                         query = "/actual_evaluation_dict"
