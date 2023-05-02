@@ -411,7 +411,7 @@ async def real_system_replace_model(id_container: str):
 
 @app.post("/digital-models/share-data")
 async def digital_models_share_data(info: Request):
-    info_json = await info.json()
+    info_json = await info.form()
     list_id_containers = info_json["digitalModelsSelected"]
     allSamplesList = []
     for id_container in list_id_containers:
