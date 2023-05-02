@@ -421,6 +421,7 @@ async def digital_models_share_data(info: Request):
         port_api_digital_model = ports_digital_model["8001/tcp"][0]["HostPort"]
         query_samples = "/get_samples_dataset_reviewed"
         response = requests.get(f"http://127.0.0.1:{port_api_digital_model}{query_samples}", timeout=20)
+        print(response.text)
         samplesList = response.json()
         if samplesList:
             allSamplesList.extend(samplesList)
