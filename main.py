@@ -13,20 +13,16 @@ import hashlib
 import datetime
 from queries.Users import queries as userQueries
 from queries.DigitalModels import queries as dmQueries
+from queries.AlertsMessages import queries as alertsQueries
 from queries.MongoJSONEncoder import MongoJSONEncoder
 import pandas as pd
+from constants import *
 
 app = FastAPI(middleware=[
     Middleware(CORSMiddleware, allow_origins=["*"])
 ])
 dockerClient = docker.from_env()
 
-image_digital_model_name = "jesuscumpli/model-digital"
-image_digital_model_tag = "mdv6"
-image_real_sytem_name = "jesuscumpli/model-digital"
-image_real_system_tag = "mdv6"
-container_id_real_system = "a366d74f-dc6e-4132-8df8-8e7d6c9f0b07"
-container_real_system_name = "real-system"
 
 
 @app.get("/")
@@ -507,6 +503,10 @@ async def digital_models_combine_models(info: Request):
 
     return {}
 
+@app.post("/alerts/delivered/all")
+async def alerts_delivered_all():
+    alertsQueries.deliveredAllAlertsMessages()
+    return {"success": True}
 
 @app.post("/users/register")
 async def users_register(info: Request):
