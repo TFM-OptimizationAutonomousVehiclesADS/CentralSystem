@@ -82,7 +82,7 @@ async def digital_models_new(info: Request):
         "ports": {"8001/tcp": None},
         # "cpu_period": 100000,  # Limita el uso de CPU
         # "cpu_quota": 50000,  # Limita el uso de CPU
-        "mem_limit": mem_limit,
+        # "mem_limit": mem_limit,
         "restart_policy": {"Name": "always"},
         "environment": {
             "DIGITAL_MODEL_NAME": container_name,
@@ -140,9 +140,9 @@ async def real_system_new():
             "image": f"{image_real_sytem_name}:{image_real_system_tag}",
             "name": container_real_system_name,
             "detach": True,  # Ejecutar el contenedor en segundo plano
-            "cpu_period": 100000,  # Limita el uso de CPU
-            "cpu_quota": 25000,  # Limita el uso de CPU
-            "mem_limit": "1g",
+            # "cpu_period": 100000,  # Limita el uso de CPU
+            # "cpu_quota": 25000,  # Limita el uso de CPU
+            # "mem_limit": "1g",
             "ports": {"8001/tcp": None},
             "environment": {
                 "IS_REAL_SYSTEM": int(1),
@@ -462,8 +462,8 @@ async def digital_models_combine_models(info: Request):
         "image": f"{image_digital_model_name}:{image_digital_model_tag}",
         "name": container_name,
         "detach": True,  # Ejecutar el contenedor en segundo plano
-        "cpu_period": 100000,  # Limita el uso de CPU
-        "cpu_quota": 25000,  # Limita el uso de CPU
+        # "cpu_period": 100000,  # Limita el uso de CPU
+        # "cpu_quota": 25000,  # Limita el uso de CPU
         "ports": {"8001/tcp": None},
         "environment": {
             "DIGITAL_MODEL_NAME": container_name,
