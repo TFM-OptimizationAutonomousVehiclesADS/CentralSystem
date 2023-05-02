@@ -527,7 +527,7 @@ async def alerts_delivered_all():
     alertsQueries.deliveredAllAlertsMessages()
     return {"success": True}
 
-@app.post("/alerts/messages/all")
+@app.get("/alerts/messages/all")
 async def alerts_messages_all():
     result = alertsQueries.findAllAlertsMessagesNoDelivered()
     return {"alerts": result}
