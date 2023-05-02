@@ -423,7 +423,19 @@ async def digital_models_share_data(info: Request):
         response = requests.get(f"http://127.0.0.1:{port_api_digital_model}{query_samples}", timeout=20)
         samplesList = response.json()
         if samplesList:
-            allSamplesList.extend(samplesList["samples"])
+            # allSamplesList.extend(samplesList["samples"])
+            for sample in samplesList["samples"]:
+                sampleJson = {
+                    # "resizedImage": sample["filename_resized_image"],
+                    "filename_resized_image": sample["filename_resized_image"],
+                    "filename_objects_image": sample["filename_objects_image"],
+                    "filename_surfaces_image": sample["filename_surfaces_image"],
+                    "speed": sample["speed"],
+                    "rotation_rate_z": sample["rotation_rate_z"],
+                    "channel_camera": sample["channel_camera"],
+                    "anomaly": bool(sample["anomaly"])
+                }
+                allSamplesList.append(sampleJson)
 
     print(allSamplesList)
     for id_container in list_id_containers:
