@@ -32,6 +32,11 @@ def findAllAlertsMessages():
     result = list(collection.find({}, {'_id': False}).sort("timestamp", pymongo.DESCENDING))
     return result
 
+def findAllAlertsMessagesFederative():
+    result = []
+    result = list(collection.find({"typeAlert": "FEDERATIVE"}, {'_id': False}).sort("timestamp", pymongo.DESCENDING))
+    return result
+
 def findAllAlertsMessagesNoDelivered():
     result = []
     result = list(collection.find({"delivered": False}, {'_id': False}).sort("timestamp", pymongo.DESCENDING))
