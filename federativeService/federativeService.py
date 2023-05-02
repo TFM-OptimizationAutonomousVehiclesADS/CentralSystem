@@ -139,12 +139,13 @@ if __name__ == "__main__":
                         data = response.json()
                         if data and "evaluation_dict" in data:
                             metric_result = data["evaluation_dict"]["f1_score"]
+                            logging.info(f"Digital Model {digitalModel['name']} - F1 Score: {metric_result}")
                             if metric_result > best_metric_real_system:
                                 best_metric_found = metric_result
                                 best_digital_model_found = digitalModel
                                 better_found = True
-                    except:
-                        pass
+                    except Exception as e:
+                        logging.exception(e)
 
             # Federative Technique
             if better_found:
