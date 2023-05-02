@@ -527,6 +527,11 @@ async def alerts_delivered_all():
     alertsQueries.deliveredAllAlertsMessages()
     return {"success": True}
 
+@app.get("/alerts/federative/all")
+async def alerts_federative_all():
+    result = alertsQueries.findAllAlertsMessagesFederative()
+    return {"alerts": result}
+
 @app.get("/alerts/messages/all")
 async def alerts_messages_all():
     result = alertsQueries.findAllAlertsMessagesNoDelivered()
