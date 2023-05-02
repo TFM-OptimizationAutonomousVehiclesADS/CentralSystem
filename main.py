@@ -83,6 +83,7 @@ async def digital_models_new(info: Request):
         "cpu_period": 100000,  # Limita el uso de CPU
         "cpu_quota": 50000,  # Limita el uso de CPU
         "mem_limit": mem_limit,
+        "restart_policy": {"Name": "always"},
         "environment": {
             "DIGITAL_MODEL_NAME": container_name,
             "DIGITAL_MODEL_USERNAME_OWNER": info_json["DIGITAL_MODEL_USERNAME_OWNER"],
