@@ -102,18 +102,13 @@ def real_system_replace_model(id_container: str):
 
 
 if __name__ == "__main__":
+    logging.info("START FEDERATIVE SERVICE")
     dockerClient = docker.from_env()
 
     while True:
         try:
-
-            # Real System Info
-            # realSystemData = real_system_info()
-            # if not realSystemData:
-            #     logging.info("REAL SYSTEM IS NOT RUNNING")
-            #     time.sleep(SLEEP_TIME)
-            #     continue
-
+            logging.info("CHECKING METRICS OF REAL SYSTEM")
+            # Real System
             containerRealSystem = dockerClient.containers.get(container_real_system_name)
             port_api = containerRealSystem.attrs['NetworkSettings']['Ports']["8001/tcp"][0]["HostPort"]
             query = "/actual_evaluation_dict"
@@ -121,30 +116,36 @@ if __name__ == "__main__":
             data = response.json()
 
             if not data or "evaluation_dict" not in data:
-                print("REAL SYSTEM IS NOT RUNNING")
+                logging.info("REAL SYSTEM IS NOT RUNNING")
                 time.sleep(SLEEP_TIME)
                 continue
             best_metric_real_system = data["evaluation_dict"]["f1_score"]
 
+            logging.info("CHECKING METRICS OF DIGITAL MODELS")
+            # Digital Models
             best_metric_found = 0.0
             best_digital_model_found = 0.0
             better_found = False
             allDigitalModels = all_digital_models()
             if allDigitalModels:
                 for digitalModel in allDigitalModels:
-                    idDigitalModel = digitalModel["id"]
-                    container = dockerClient.containers.get(idDigitalModel)
-                    port_api = containerRealSystem.attrs['NetworkSettings']['Ports']["8001/tcp"][0]["HostPort"]
-                    query = "/actual_evaluation_dict"
-                    response = requests.get(f"http://127.0.0.1:{port_api}{query}", timeout=20)
-                    data = response.json()
-                    if data and "evaluation_dict" in data:
-                        metric_result = data["evaluation_dict"]["f1_score"]
-                        if metric_result > best_metric_real_system:
-                            best_metric_found = metric_result
-                            best_digital_model_found = digitalModel
-                            better_found = True
+                    try:
+                        idDigitalModel = digitalModel["id"]
+                        container = dockerClient.containers.get(idDigitalModel)
+                        port_api = containerRealSystem.attrs['NetworkSettings']['Ports']["8001/tcp"][0]["HostPort"]
+                        query = "/actual_evaluation_dict"
+                        response = requests.get(f"http://127.0.0.1:{port_api}{query}", timeout=20)
+                        data = response.json()
+                        if data and "evaluation_dict" in data:
+                            metric_result = data["evaluation_dict"]["f1_score"]
+                            if metric_result > best_metric_real_system:
+                                best_metric_found = metric_result
+                                best_digital_model_found = digitalModel
+                                better_found = True
+                    except:
+                        pass
 
+            # Federative Technique
             if better_found:
                 logging.info("SE HA ENCONTRAD UN MODELO DIGITAL CON MEJOR F1-SCORE")
                 logging.info(f"Modelo Digital: {best_digital_model_found['name']}")
