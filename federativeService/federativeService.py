@@ -8,6 +8,7 @@ from queries.AlertsMessages import queries as alertsQueries
 from constants import *
 import json
 
+logging.basicConfig(level=logging.INFO)
 SLEEP_TIME = 120  # 2 minutes
 
 
