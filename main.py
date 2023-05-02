@@ -424,7 +424,7 @@ async def digital_models_share_data(info: Request):
         print(response.text)
         samplesList = response.json()
         if samplesList:
-            allSamplesList.extend(samplesList)
+            allSamplesList.extend(samplesList["samples"])
 
     for id_container in list_id_containers:
         container_digital_model = dockerClient.containers.get(id_container)
