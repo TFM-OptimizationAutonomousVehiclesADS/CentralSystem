@@ -82,7 +82,7 @@ async def digital_models_new(info: Request):
         "ports": {"8001/tcp": None},
         # "cpu_period": 100000,  # Limita el uso de CPU
         # "cpu_quota": 50000,  # Limita el uso de CPU
-        # "mem_limit": mem_limit,
+        "mem_limit": mem_limit,
         "restart_policy": {"Name": "always"},
         "environment": {
             "DIGITAL_MODEL_NAME": container_name,
@@ -142,11 +142,12 @@ async def real_system_new():
             "detach": True,  # Ejecutar el contenedor en segundo plano
             "cpu_period": 100000,  # Limita el uso de CPU
             "cpu_quota": 25000,  # Limita el uso de CPU
+            "mem_limit": "1g",
             "ports": {"8001/tcp": None},
             "environment": {
                 "IS_REAL_SYSTEM": int(1),
                 "DIGITAL_MODEL_NAME": container_real_system_name,
-                "DIGITAL_MODEL_VERSION": "RANDOM",
+                "DIGITAL_MODEL_VERSION": "REAL_SYSTEM",
                 "DIGITAL_MODEL_USERNAME_OWNER": 'admin',
                 "DIGITAL_MODEL_RETRAINING_TEST_SIZE": float(0.25),
                 "DIGITAL_MODEL_RETRAINING_TUNNING": int(0),
@@ -402,13 +403,42 @@ async def real_system_replace_model(id_container: str):
 
         print("QUERY: REPLACE ACTUAL MODEL")
         query_post_replace_model = "/replace_actual_model"
-        response = requests.post(f"http://127.0.0.1:{port_api_real_system}{query_post_replace_model}", files={"model_bytes": model_bytes},
-                                 data={"evaluation_dict": json.dumps(evaluation_dict)},  timeout=20)
+        response = requests.post(f"http://127.0.0.1:{port_api_real_system}{query_post_replace_model}",
+                                 files={"model_bytes": model_bytes},
+                                 data={"evaluation_dict": json.dumps(evaluation_dict)}, timeout=20)
         success = response.json()
         print("RESPONSE: " + str(success))
         success = success.get("success", False)
 
     return {"success": success}
+
+
+@app.post("/digital-models/share-data")
+async def digital_models_predict_single(info: Request):
+    info_json = await info.json()
+    list_id_containers = info_json["digital-models-selected"]
+    allSamplesList = []
+    for id_container in list_id_containers:
+        container_digital_model = dockerClient.containers.get(id_container)
+        status_digital_model = container_digital_model.attrs["State"]["Status"]
+        ports_digital_model = container_digital_model.attrs['NetworkSettings']['Ports']
+        port_api_digital_model = ports_digital_model["8001/tcp"][0]["HostPort"]
+        query_samples = "/get_samples_dataset_reviewed"
+        response = requests.get(f"http://127.0.0.1:{port_api_digital_model}{query_samples}", timeout=20)
+        samplesList = response.json()
+        if samplesList:
+            allSamplesList.extend(samplesList)
+
+    for id_container in list_id_containers:
+        container_digital_model = dockerClient.containers.get(id_container)
+        status_digital_model = container_digital_model.attrs["State"]["Status"]
+        ports_digital_model = container_digital_model.attrs['NetworkSettings']['Ports']
+        port_api_digital_model = ports_digital_model["8001/tcp"][0]["HostPort"]
+        query_samples_post = "/add_samples_dataset_reviewed"
+        response = requests.post(f"http://127.0.0.1:{port_api_digital_model}{query_samples_post}",
+                                 json={allSamplesList}, timeout=20)
+
+    return {"success": True}
 
 
 @app.post("/digital-models/combine-models")
