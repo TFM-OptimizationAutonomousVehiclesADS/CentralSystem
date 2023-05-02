@@ -133,7 +133,7 @@ if __name__ == "__main__":
                     try:
                         idDigitalModel = digitalModel["id"]
                         container = dockerClient.containers.get(idDigitalModel)
-                        port_api = containerRealSystem.attrs['NetworkSettings']['Ports']["8001/tcp"][0]["HostPort"]
+                        port_api = container.attrs['NetworkSettings']['Ports']["8001/tcp"][0]["HostPort"]
                         query = "/actual_evaluation_dict"
                         response = requests.get(f"http://127.0.0.1:{port_api}{query}", timeout=20)
                         data = response.json()
