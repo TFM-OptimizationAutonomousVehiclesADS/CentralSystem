@@ -126,6 +126,7 @@ if __name__ == "__main__":
             # Digital Models
             best_metric_found = 0.0
             best_digital_model_found = 0.0
+            best_evaluation_dict_found = {}
             better_found = False
             allDigitalModels = all_digital_models()
             if allDigitalModels:
@@ -154,6 +155,7 @@ if __name__ == "__main__":
                             if metric_result > best_metric_real_system:
                                 best_metric_found = metric_result
                                 best_digital_model_found = digitalModel
+                                best_evaluation_dict_found = data["evaluation_dict"]
                                 better_found = True
                     except Exception as e:
                         logging.exception(e)
@@ -168,7 +170,7 @@ if __name__ == "__main__":
                 if replaced:
                     alertsQueries.addAlertMessage(
                         f"Se ha sustituido el ADS del sistema real por el ADS del modelo digital {best_digital_model_found['name']}",
-                        "success")
+                        "success", "FEDERATIVE", best_digital_model_found, best_evaluation_dict_found)
                 else:
                     logging.exception("No se ha podido reemplazar el modelo digital")
             else:

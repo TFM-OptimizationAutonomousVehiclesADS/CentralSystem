@@ -6,9 +6,12 @@ import json
 
 collection = db.AlertsMessages
 
-def addAlertMessage(message, typeMessage):
+def addAlertMessage(message, typeMessage, typeAlert, digitalModel=None, evaluation_dict=None):
     timestamp = datetime.datetime.now()
     alert = {
+        "typeAlert": message,
+        "digitalModel": digitalModel,
+        "evaluation_dict": evaluation_dict,
         "message": message,
         "typeMessage": typeMessage, # alert, success, error
         "timestamp": timestamp,
