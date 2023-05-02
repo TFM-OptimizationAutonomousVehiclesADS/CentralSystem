@@ -442,6 +442,8 @@ async def digital_models_share_data(info: Request):
 async def digital_models_combine_models(info: Request):
     info_json = await info.form()
     list_id_containers = json.loads(info_json["digitalModelsSelected"])
+    modelVersion = info_json["modelVersion"]
+    resultBy = info_json["resultBy"]
 
     models_json = []
     for id_container in list_id_containers:
@@ -464,6 +466,8 @@ async def digital_models_combine_models(info: Request):
         "ports": {"8001/tcp": None},
         "environment": {
             "DIGITAL_MODEL_NAME": container_name,
+            "DIGITAL_MODEL_VERSION": modelVersion,
+            "DIGITAL_MODEL_COMBINE_MODEL_RESULT_BY": resultBy,
             "DIGITAL_MODEL_COMBINE_MODEL_CONFIGS": json.dumps(models_json),
             "DIGITAL_MODEL_USERNAME_OWNER": info_json["DIGITAL_MODEL_USERNAME_OWNER"],
             "DIGITAL_MODEL_RETRAINING_TEST_SIZE": float(0.25),
