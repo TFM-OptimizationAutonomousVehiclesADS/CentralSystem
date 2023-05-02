@@ -71,6 +71,10 @@ async def digital_models_new(info: Request):
     modelVersion = "RANDOM"
     if int(info_json["DIGITAL_MODEL_RETRAINING_TUNNING"] == "true") == 1:
         modelVersion = "TUNNING"
+
+    mem_limit = "1g"
+    if modelVersion == "TUNNING":
+        mem_limit = "2g"
     options = {
         "image": f"{image_digital_model_name}:{image_digital_model_tag}",
         "name": container_name,
@@ -78,7 +82,7 @@ async def digital_models_new(info: Request):
         "ports": {"8001/tcp": None},
         "cpu_period": 100000,  # Limita el uso de CPU
         "cpu_quota": 50000,  # Limita el uso de CPU
-        "mem_limit": "1g",
+        "mem_limit": mem_limit,
         "environment": {
             "DIGITAL_MODEL_NAME": container_name,
             "DIGITAL_MODEL_USERNAME_OWNER": info_json["DIGITAL_MODEL_USERNAME_OWNER"],
