@@ -485,7 +485,7 @@ async def digital_models_combine_models(info: Request):
             "DIGITAL_MODEL_SIZE_IMAGES_OPTIMIZER": "adam",
             "DIGITAL_MODEL_SIZE_IMAGES_LOSS": "binary_crossentropy",
             "DIGITAL_MODEL_SIZE_IMAGES_METRICS": json.dumps(['accuracy', 'f1_score', 'recall', 'precision']),
-            "DIGITAL_MODEL_SIZE_IMAGES_METRIC_OBJECTIVE": info_json["DIGITAL_MODEL_SIZE_IMAGES_METRIC_OBJECTIVE"],
+            "DIGITAL_MODEL_SIZE_IMAGES_METRIC_OBJECTIVE": "f1_score",
             "DIGITAL_MODEL_SIZE_IMAGES_FLOAT_FEATURES": json.dumps(['channel_camera', 'speed', 'rotation_rate_z']),
             "DIGITAL_MODEL_SIZE_IMAGES_IMAGES_FEATURES": json.dumps(
                 ['filename_resized_image', 'filename_objects_image', 'filename_surfaces_image']),
