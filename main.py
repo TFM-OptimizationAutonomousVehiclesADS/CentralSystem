@@ -78,7 +78,7 @@ async def digital_models_new(info: Request):
         "ports": {"8001/tcp": None},
         "cpu_period": 100000,  # Limita el uso de CPU
         "cpu_quota": 25000,  # Limita el uso de CPU
-        "mem_limit": "256m",
+        "mem_limit": "1g",
         "environment": {
             "DIGITAL_MODEL_NAME": container_name,
             "DIGITAL_MODEL_USERNAME_OWNER": info_json["DIGITAL_MODEL_USERNAME_OWNER"],
