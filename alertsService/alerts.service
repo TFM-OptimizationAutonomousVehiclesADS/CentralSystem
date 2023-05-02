@@ -1,0 +1,10 @@
+[Unit]
+Description=Alerts Service
+After=multi-user.target
+[Service]
+Type=simple
+Restart=always
+Environment="PYTHONPATH=/opt/CentralSystem/"
+ExecStart=/opt/CentralSystem//venv/bin/python3 /opt/CentralSystem/alertsService/alertsService.py
+[Install]
+WantedBy=multi-user.target
