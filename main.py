@@ -80,9 +80,9 @@ async def digital_models_new(info: Request):
         "name": container_name,
         "detach": True,  # Ejecutar el contenedor en segundo plano
         "ports": {"8001/tcp": None},
-        "cpu_period": 100000,  # Limita el uso de CPU
-        "cpu_quota": 50000,  # Limita el uso de CPU
-        "mem_limit": mem_limit,
+        # "cpu_period": 100000,  # Limita el uso de CPU
+        # "cpu_quota": 50000,  # Limita el uso de CPU
+        # "mem_limit": mem_limit,
         "restart_policy": {"Name": "always"},
         "environment": {
             "DIGITAL_MODEL_NAME": container_name,
