@@ -456,6 +456,9 @@ async def digital_models_combine_models(info: Request):
         model_json = response.json()
         models_json.append(model_json)
 
+    print(models_json)
+    logging.warning(models_json)
+
     container_name = info_json["container_name"]
     options = {
         "image": f"{image_digital_model_name}:{image_digital_model_tag}",
