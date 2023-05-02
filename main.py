@@ -454,10 +454,9 @@ async def digital_models_combine_models(info: Request):
         query_actual_model_file = "/actual_model_json"
         response = requests.get(f"http://127.0.0.1:{port_api_digital_model}{query_actual_model_file}", timeout=20)
         model_json = response.json()
-        models_json.append(model_json["model_json"])
+        models_json.append(json.loads(model_json["model_json"]))
 
     print(models_json)
-    logging.warning(models_json)
 
     container_name = info_json["container_name"]
     options = {
