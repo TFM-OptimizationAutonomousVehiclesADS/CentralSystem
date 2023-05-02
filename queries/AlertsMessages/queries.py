@@ -26,10 +26,10 @@ def deliveredAllAlertsMessages():
 
 def findAllAlertsMessages():
     result = []
-    result = list(collection.find().sort("timestamp", pymongo.DESCENDING))
+    result = list(collection.find({}, {'_id': False}).sort("timestamp", pymongo.DESCENDING))
     return result
 
 def findAllAlertsMessagesNoDelivered():
     result = []
-    result = list(collection.find({"delivered": False}).sort("timestamp", pymongo.DESCENDING))
+    result = list(collection.find({"delivered": False}, {'_id': False}).sort("timestamp", pymongo.DESCENDING))
     return result
