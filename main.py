@@ -337,6 +337,27 @@ async def digital_models_predict_multiple(id_container, fileCSV: UploadFile):
 
     return {"samples": samplesJson, "evaluation_dict": evaluation_dict}
 
+@app.post("/real-system/predict/multiple")
+async def real_system_predict_multiple(fileCSV: UploadFile):
+    contents = await fileCSV.read()
+    data = None
+    samplesJson = None
+    evaluation_dict = None
+
+    df = pd.read_csv(io.BytesIO(contents))
+
+    container = dockerClient.containers.get(container_real_system_name)
+    status = container.attrs["State"]["Status"]
+    ports = container.attrs['NetworkSettings']['Ports']
+    if status == "running":
+        ip_address = container.attrs["NetworkSettings"]["IPAddress"]
+        port_api = ports["8001/tcp"][0]["HostPort"]
+        response = requests.post(f"http://127.0.0.1:{port_api}/predict_multiple", json=df.to_json(), timeout=20)
+        samplesJson = response.json()
+        response = requests.post(f"http://127.0.0.1:{port_api}/evaluate_dataframe", json=df.to_json(), timeout=20)
+        evaluation_dict = response.json()
+
+    return {"samples": samplesJson, "evaluation_dict": evaluation_dict}
 
 @app.post("/digital-models/predict/{id_container}/single")
 async def digital_models_predict_single(id_container, info: Request, resizedImage: UploadFile, objectImage: UploadFile,
@@ -368,6 +389,35 @@ async def digital_models_predict_single(id_container, info: Request, resizedImag
 
     return data
 
+@app.post("/real-system/predict/single")
+async def real_system_predict_single(info: Request, resizedImage: UploadFile, objectImage: UploadFile,
+                                        surfaceImage: UploadFile):
+    info_json = await info.form()
+    contentsResizedImage = await resizedImage.read()
+    contentsObjectImage = await objectImage.read()
+    contentsSurfaceImage = await surfaceImage.read()
+    data = None
+    sample_response = None
+
+    container = dockerClient.containers.get(container_real_system_name)
+    status = container.attrs["State"]["Status"]
+    ports = container.attrs['NetworkSettings']['Ports']
+    if status == "running":
+        ip_address = container.attrs["NetworkSettings"]["IPAddress"]
+        port_api = ports["8001/tcp"][0]["HostPort"]
+        sampleJson = {
+            "resizedImage": base64.b64encode(contentsResizedImage).decode("utf-8"),
+            "objectImage": base64.b64encode(contentsObjectImage).decode("utf-8"),
+            "surfaceImage": base64.b64encode(contentsSurfaceImage).decode("utf-8"),
+            "speed": info_json["speed"],
+            "rotation_rate_z": info_json["rotation_rate_z"],
+            "channel_camera": info_json["channel_camera"],
+            "anomaly": True
+        }
+        response = requests.post(f"http://127.0.0.1:{port_api}/predict_single", json=sampleJson, timeout=20)
+        data = response.json()
+
+    return data
 
 @app.post("/real-system/replace-model/{id_container}")
 async def real_system_replace_model(id_container: str):
