@@ -9,7 +9,7 @@ from constants import *
 import json
 
 logging.basicConfig(level=logging.INFO)
-SLEEP_TIME = 120  # 2 minutes
+SLEEP_TIME = 600  # 10 minutes
 
 
 def all_digital_models():
