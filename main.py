@@ -454,6 +454,22 @@ async def real_system_replace_model(id_container: str):
                                  data={"evaluation_dict": json.dumps(evaluation_dict)}, timeout=20)
         success = response.json()
         print("RESPONSE: " + str(success))
+
+        if success:
+            data = {}
+            data["id"] = container_digital_model.id
+            data["status"] = container_digital_model.attrs["State"]["Status"]
+            data["state"] = container_digital_model.attrs["State"]
+            data["short_id"] = container_digital_model.short_id
+            data["name"] = container_digital_model.attrs["Name"]
+            data["ip"] = container_digital_model.attrs["NetworkSettings"]["IPAddress"]
+            data["image"] = container_digital_model.attrs["Config"]["Image"]
+            data["params"] = container_digital_model.attrs["Config"]["Env"]
+            data["created"] = container_digital_model.attrs["Created"]
+            alertsQueries.addAlertMessage(
+                f"Se ha sustituido el ADS del sistema real por el ADS del modelo digital {data['name']}",
+                "success", "FEDERATIVE", data, evaluation_dict)
+
         success = success.get("success", False)
 
     return {"success": success}
