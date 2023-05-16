@@ -20,3 +20,10 @@
 > sudo systemctl enable api.service
 > sudo systemctl start api.service
 
+> sudo cp alertsService/alerts.service /etc/systemd/system/alerts.service
+> sudo systemctl enable alerts.service
+> sudo systemctl start alerts.service
+
+> sudo cp federativeService/federative.service /etc/systemd/system/federative.service
+> sudo systemctl enable federative.service
+> sudo systemctl start federative.service
